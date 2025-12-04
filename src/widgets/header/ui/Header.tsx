@@ -12,7 +12,7 @@ export const Header = () => {
   return (
     <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
       <Link href="/" className="flex items-center gap-3">
-        <Image src="/mandalart_logo.png" alt="08.MANDALART 로고" width={40} height={40} priority />
+        <Image src="/mandalart_logo.svg" alt="08.MANDALART 로고" width={40} height={40} priority />
       </Link>
       <div className="flex items-center">
         {isLoading ? (

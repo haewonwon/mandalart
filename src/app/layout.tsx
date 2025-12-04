@@ -16,11 +16,11 @@ export const metadata: Metadata = {
 
   openGraph: {
     title: '08.MANDALART',
-    description: 'Expand your vision with Infinite Grid.',
+    description: 'Expand your vision with 0800 Mandalart.',
     type: 'website',
     locale: 'ko_KR',
     siteName: '08.MANDALART',
-    // images: [ ... ] // 나중에 썸네일 이미지 생기면 추가하세요!
+    images: ['/mandalart_logo.svg'],
   },
 
   // 6. 아이콘 (favicon)
