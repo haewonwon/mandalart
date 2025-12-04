@@ -11,23 +11,33 @@ export const Header = () => {
   const pathname = usePathname();
 
   return (
-    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
-      <Link href="/" className="flex items-center gap-3">
-        <Image src="/mandalart_logo.svg" alt="08.MANDALART 로고" width={40} height={40} priority />
-      </Link>
-      <div className="flex items-center">
-        {isLoading ? (
-          <span className="text-sm text-slate-500">인증 상태를 확인하고 있습니다...</span>
-        ) : session ? (
-          <LogoutButton />
-        ) : pathname === '/login' ? null : (
-          <Link
-            href="/login"
-            className="rounded border border-gray-300 bg-white px-4 py-2 font-normal text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            LOGIN
-          </Link>
-        )}
+    <header className="border-b border-slate-200 bg-white">
+      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:max-w-8xl sm:flex-nowrap sm:px-6 sm:py-4">
+        <Link href="/" className="flex items-center gap-2 sm:gap-3">
+          <Image
+            src="/mandalart_logo.svg"
+            alt="08.MANDALART 로고"
+            width={36}
+            height={36}
+            priority
+            className="h-10 w-10"
+          />
+        </Link>
+
+        <div className="flex shrink-0 items-center justify-end">
+          {isLoading ? (
+            <span className="text-sm text-slate-500">LOADING</span>
+          ) : session ? (
+            <LogoutButton />
+          ) : pathname === '/login' ? null : (
+            <Link
+              href="/login"
+              className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              LOGIN
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   );
