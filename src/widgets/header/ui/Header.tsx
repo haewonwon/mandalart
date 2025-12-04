@@ -1,13 +1,14 @@
 'use client';
 
 import { useAuthSession } from '@/features/auth/model/useAuthSession';
-import { LoginButton } from '@/features/auth/ui/LoginButton';
 import { LogoutButton } from '@/features/auth/ui/LogoutButton';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export const Header = () => {
   const { session, isLoading } = useAuthSession();
+  const pathname = usePathname();
 
   return (
     <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
@@ -19,8 +20,13 @@ export const Header = () => {
           <span className="text-sm text-slate-500">인증 상태를 확인하고 있습니다...</span>
         ) : session ? (
           <LogoutButton />
-        ) : (
-          <LoginButton />
+        ) : pathname === '/login' ? null : (
+          <Link
+            href="/login"
+            className="rounded border border-gray-300 bg-white px-4 py-2 font-normal text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            LOGIN
+          </Link>
         )}
       </div>
     </header>

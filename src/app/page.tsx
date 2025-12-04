@@ -1,11 +1,9 @@
-import { MandalartBoard } from '@/widgets/mandalart-board/ui/MandalartBoard';
+import { LandingHero } from '@/widgets/landing-hero/ui/LandingHero';
 
 export default function Home() {
   return (
-    <main className="flex w-full flex-1 flex-col items-center justify-center px-6 py-6">
-      <div className="w-full max-w-xl mx-auto">
-        <MandalartBoard />
-      </div>
+    <main className="flex w-full flex-1 flex-col">
+      <LandingHero />
     </main>
   );
 }
