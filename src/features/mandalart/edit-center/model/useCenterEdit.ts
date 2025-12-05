@@ -34,9 +34,11 @@ const createEmptyGrid = (): MandalartGrid => {
   ) as MandalartCenterGrid;
 
   const emptySubGrids = Object.values(INDEX_TO_SUBGRID_KEY).reduce((acc, key) => {
-    acc[key] = Array.from({ length: 9 }, (_, i) =>
-      createEmptyCell(`${key}-${i}`)
-    ) as MandalartCenterGrid;
+    if (key) {
+      acc[key] = Array.from({ length: 9 }, (_, i) =>
+        createEmptyCell(`${key}-${i}`)
+      ) as MandalartCenterGrid;
+    }
     return acc;
   }, {} as Record<MandalartSubGridKey, MandalartCenterGrid>);
 
