@@ -1,4 +1,4 @@
-import { DashboardYearPage } from '@/pages/dashboard-year/ui/DashboardYearPage';
+import { DashboardYearPage } from '@/views/dashboard-year/ui/DashboardYearPage';
 
 type Props = {
   params: {

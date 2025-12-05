@@ -1,4 +1,4 @@
-import { MandalartDetailPage } from '@/pages/mandalart-detail/ui/MandalartDetailPage';
+import { MandalartDetailPage } from '@/views/mandalart-detail/ui/MandalartDetailPage';
 
 type Props = {
   params: {
