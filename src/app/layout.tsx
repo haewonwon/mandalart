@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Header } from '@/widgets/header/ui/Header';
+import { ReactQueryProvider } from '@/shared/lib/react-query/ReactQueryProvider';
 
 export const metadata: Metadata = {
   title: {
@@ -33,8 +34,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko">
       <body className="flex min-h-screen flex-col bg-white text-slate-900 antialiased">
-        <Header />
-        <div className="flex flex-1 flex-col">{children}</div>
+        <ReactQueryProvider>
+          <Header />
+          <div className="flex flex-1 flex-col">{children}</div>
+        </ReactQueryProvider>
       </body>
     </html>
   );
