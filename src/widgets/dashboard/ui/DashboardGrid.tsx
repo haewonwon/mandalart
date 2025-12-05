@@ -1,20 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { MandalartCard, MandalartCardProps } from '@/entities/mandalart/ui/MandalartCard';
-import { WelcomeSection } from './WelcomeSection';
+import { MandalartCard } from '@/entities/mandalart/ui/MandalartCard';
 import { EmptyState } from './EmptyState';
+import type { Mandalart } from '@/entities/mandalart/model/types';
 
 type DashboardGridProps = {
-  statusMessage: string;
-  cards: MandalartCardProps[];
+  mandalarts: Mandalart[];
 };
 
-export const DashboardGrid = ({ statusMessage, cards }: DashboardGridProps) => {
+export const DashboardGrid = ({ mandalarts }: DashboardGridProps) => {
   return (
-    <div className="flex h-full w-full flex-col gap-8 px-6 py-8">
-      <WelcomeSection statusMessage={statusMessage} />
-      {cards.length === 0 ? (
+    <div className="flex h-full w-full flex-col gap-8">
+      {mandalarts.length === 0 ? (
         <EmptyState />
       ) : (
         <div className="grid h-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -36,8 +34,19 @@ export const DashboardGrid = ({ statusMessage, cards }: DashboardGridProps) => {
             label="핵심 만다라트 보기"
             description="중심 3x3만 집중해서 빠르게 편집하세요."
           />
-          {cards.map((card) => (
-            <MandalartCard key={card.id} {...card} />
+          {mandalarts.map((mandalart) => (
+            <MandalartCard
+              key={mandalart.id}
+              id={mandalart.id}
+              title={mandalart.title}
+              status="진행 중" // TODO: 상태값 DB 추가 시 연동
+              gridPreview={
+                mandalart.current_version?.content.center.map((cell) => ({
+                  id: cell.id,
+                  label: cell.label,
+                })) || []
+              }
+            />
           ))}
         </div>
       )}
