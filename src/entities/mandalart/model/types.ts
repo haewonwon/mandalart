@@ -2,18 +2,71 @@ export type MandalartCell = {
   id: string;
   title: string;
   isCompleted: boolean;
-  color?: string; // 나중에 힙하게 꾸밀 때 필요
+  color?: string;
 };
 
-// 3x3 격자 하나 (Cluster)
 export type MandalartCluster = {
   id: string;
-  centerCell: MandalartCell; // 가운데 핵심 목표
-  surroundingCells: MandalartCell[]; // 주변 8개
+  centerCell: MandalartCell;
+  surroundingCells: MandalartCell[];
 };
 
-// 전체 9x9 보드
 export type MandalartBoardData = {
-  mainCluster: MandalartCluster; // 정중앙
-  subClusters: MandalartCluster[]; // 주변 8개 확장
+  mainCluster: MandalartCluster;
+  subClusters: MandalartCluster[];
+};
+
+// core data for versioned mandalart grid
+export type MandalartCoreCell = {
+  id: string;
+  label: string;
+  note?: string;
+  completed: boolean;
+  updatedAt: string;
+};
+
+export type MandalartCenterGrid = [
+  MandalartCoreCell,
+  MandalartCoreCell,
+  MandalartCoreCell,
+  MandalartCoreCell,
+  MandalartCoreCell,
+  MandalartCoreCell,
+  MandalartCoreCell,
+  MandalartCoreCell,
+  MandalartCoreCell
+];
+
+export type MandalartSubGridKey =
+  | 'northWest'
+  | 'north'
+  | 'northEast'
+  | 'west'
+  | 'east'
+  | 'southWest'
+  | 'south'
+  | 'southEast';
+
+export type MandalartGrid = {
+  center: MandalartCenterGrid;
+  subGrids: Record<MandalartSubGridKey, MandalartCoreCell[]>;
+};
+
+export type MandalartVersion = {
+  id: string;
+  projectId: string;
+  version: number;
+  parentVersionId?: string;
+  data: MandalartGrid;
+  insertedAt: string;
+  updatedBy?: string;
+};
+
+export type MandalartProject = {
+  id: string;
+  userId: string;
+  year: number;
+  currentVersionId: string;
+  isPublic: boolean;
+  versions?: MandalartVersion[];
 };
