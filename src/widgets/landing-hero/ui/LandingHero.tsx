@@ -2,7 +2,11 @@
 
 import { useAuthSession } from '@/features/auth/model/useAuthSession';
 import { DynamicMandalartDemo } from '@/features/landing/dynamic-demo/ui/DynamicMandalartDemo';
-import { MandalartBoard } from '@/widgets/mandalart-board/ui/MandalartBoard';
+import { DashboardGrid } from '@/widgets/dashboard/ui/DashboardGrid';
+import {
+  defaultDashboardCards,
+  dashboardStatusMessage,
+} from '@/widgets/dashboard/model/dashboardData';
 import Link from 'next/link';
 
 export const LandingHero = () => {
@@ -48,9 +52,13 @@ export const LandingHero = () => {
   }
 
   return (
-    <section className="flex w-full flex-1 flex-col items-center justify-center px-4 py-6 sm:px-6">
-      <div className="mx-auto w-full max-w-xl">
-        <MandalartBoard />
+    <section className="flex w-full flex-1 justify-center bg-slate-50 px-4 py-6 sm:px-6">
+      <div className="w-full max-w-6xl min-h-[calc(100vh-140px)]">
+        <DashboardGrid
+          nickname="08Muhan"
+          statusMessage={dashboardStatusMessage}
+          cards={defaultDashboardCards}
+        />
       </div>
     </section>
   );

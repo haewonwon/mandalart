@@ -1,0 +1,20 @@
+'use client';
+
+import Link from 'next/link';
+
+export const EmptyState = () => {
+  return (
+    <div className="border border-dashed border-slate-300 bg-white px-8 py-12 text-center">
+      <h3 className="text-2xl font-semibold text-slate-900">아직 만들어 둔 만다라트가 없어요.</h3>
+      <p className="mt-3 text-base text-slate-500">
+        첫 번째 우주를 그려보면 다음 계획이 훨씬 또렷해집니다.
+      </p>
+      <Link
+        href="/mandalart/new"
+        className="mt-6 inline-flex items-center justify-center rounded-full border border-slate-900 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white"
+      >
+        + 새 만다라트 만들기
+      </Link>
+    </div>
+  );
+};
