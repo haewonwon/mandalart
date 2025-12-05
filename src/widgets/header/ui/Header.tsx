@@ -14,6 +14,12 @@ export const Header = () => {
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  const isHeaderHidden = pathname?.startsWith('/mandalart/');
+
+  if (isHeaderHidden) {
+    return null;
+  }
+
   return (
     <>
       <header className="border-b border-slate-200 bg-white">

@@ -2,9 +2,10 @@ import type { MandalartCardProps } from '@/entities/mandalart/ui/MandalartCard';
 
 export const dashboardStatusMessage = '총 3개의 만다라트가 기록되었습니다.';
 
+// 위치 기반 ID 적용 (northWest, north, northEast...)
 export const defaultDashboardCards: MandalartCardProps[] = [
   {
-    id: 'mandalart-1',
+    id: 'northWest',
     title: '2025 크리에이티브 우주',
     status: '진행 중',
     gridPreview: [
@@ -20,7 +21,7 @@ export const defaultDashboardCards: MandalartCardProps[] = [
     ],
   },
   {
-    id: 'mandalart-2',
+    id: 'north',
     title: '일상 루틴 리부트',
     status: '설계 중',
     gridPreview: [
@@ -36,7 +37,7 @@ export const defaultDashboardCards: MandalartCardProps[] = [
     ],
   },
   {
-    id: 'mandalart-3',
+    id: 'northEast',
     title: '28일 감정 아카이브',
     status: '진행 중',
     gridPreview: [
@@ -52,7 +53,7 @@ export const defaultDashboardCards: MandalartCardProps[] = [
     ],
   },
   {
-    id: 'mandalart-4',
+    id: 'west',
     title: '사이드 프로젝트 팜',
     status: '설계 중',
     gridPreview: [
