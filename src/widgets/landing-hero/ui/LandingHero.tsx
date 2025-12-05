@@ -54,11 +54,7 @@ export const LandingHero = () => {
   return (
     <section className="flex w-full flex-1 justify-center bg-slate-50 px-4 py-6 sm:px-6">
       <div className="w-full max-w-6xl min-h-[calc(100vh-140px)]">
-        <DashboardGrid
-          nickname="08Muhan"
-          statusMessage={dashboardStatusMessage}
-          cards={defaultDashboardCards}
-        />
+        <DashboardGrid statusMessage={dashboardStatusMessage} cards={defaultDashboardCards} />
       </div>
     </section>
   );

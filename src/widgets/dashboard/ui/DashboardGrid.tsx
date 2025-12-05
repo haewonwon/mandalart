@@ -6,15 +6,14 @@ import { WelcomeSection } from './WelcomeSection';
 import { EmptyState } from './EmptyState';
 
 type DashboardGridProps = {
-  nickname: string;
   statusMessage: string;
   cards: MandalartCardProps[];
 };
 
-export const DashboardGrid = ({ nickname, statusMessage, cards }: DashboardGridProps) => {
+export const DashboardGrid = ({ statusMessage, cards }: DashboardGridProps) => {
   return (
     <div className="flex h-full w-full flex-col gap-8 px-6 py-8">
-      <WelcomeSection nickname={nickname} statusMessage={statusMessage} />
+      <WelcomeSection statusMessage={statusMessage} />
       {cards.length === 0 ? (
         <EmptyState />
       ) : (

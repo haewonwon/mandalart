@@ -1,68 +1,77 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { createClient } from '@/shared/lib/supabase';
-import type { User } from '@supabase/supabase-js';
+import type { Profile } from '@/entities/user/model/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const useProfile = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [nickname, setNickname] = useState('');
-  const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const supabase = createClient();
 
-  useEffect(() => {
-    const supabase = createClient();
+  // 1. Fetch Profile (useQuery)
+  const { data, isLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user) return { user: null, profile: null };
 
-    const fetchUser = async () => {
-      try {
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
-        if (error) throw error;
+      const { data: profileData, error: dbError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-        if (user) {
-          setUser(user);
-          setEmail(user.email || '');
-          setNickname(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
-        }
-      } catch (error) {
-        console.error('Failed to fetch user:', error);
-      } finally {
-        setIsLoading(false);
+      if (dbError) {
+        // Fallback: DB에 없으면 Auth 정보로 임시 구성
+        return {
+          user,
+          profile: {
+            id: user.id,
+            email: user.email || '',
+            nickname: user.user_metadata.full_name || '',
+          } as Profile,
+        };
       }
-    };
 
-    fetchUser();
-  }, []);
+      return { user, profile: profileData as Profile };
+    },
+    staleTime: 1000 * 60 * 5, // 5분간 캐시 유지
+  });
 
-  const updateProfile = async (newNickname: string) => {
-    if (!user) return;
-    setIsSaving(true);
-    const supabase = createClient();
+  // 2. Update Profile (useMutation)
+  const { mutateAsync: updateProfile, isPending: isSaving } = useMutation({
+    mutationFn: async (newNickname: string) => {
+      const user = data?.user;
+      if (!user) throw new Error('No user found');
 
-    try {
-      const { error } = await supabase.auth.updateUser({
-        data: { full_name: newNickname },
-      });
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          nickname: newNickname,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
 
       if (error) throw error;
-
-      setNickname(newNickname);
+      return newNickname;
+    },
+    onSuccess: () => {
+      // 캐시 무효화하여 데이터를 다시 가져오게 함 (WelcomeSection 등 자동 갱신)
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       alert('프로필이 수정되었습니다.');
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Failed to update profile:', error);
       alert('프로필 수정 중 오류가 발생했습니다.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    },
+  });
 
   return {
-    user,
-    email,
-    nickname,
+    user: data?.user ?? null,
+    profile: data?.profile ?? null,
     isLoading,
     isSaving,
     updateProfile,

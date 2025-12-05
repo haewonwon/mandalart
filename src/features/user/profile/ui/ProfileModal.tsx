@@ -11,19 +11,22 @@ type ProfileModalProps = {
 };
 
 export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
-  const { email, nickname, updateProfile, isSaving } = useProfile();
-  const [editName, setEditName] = useState(nickname);
+  const { profile, updateProfile, isSaving } = useProfile();
+  const [editName, setEditName] = useState('');
 
   // 모달이 열릴 때 닉네임 상태 동기화
   useEffect(() => {
-    if (isOpen) {
-      setEditName(nickname);
+    if (isOpen && profile) {
+      setEditName(profile.nickname);
     }
-  }, [isOpen, nickname]);
+  }, [isOpen, profile]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfile(editName);
+    const success = await updateProfile(editName);
+    if (success) {
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -54,7 +57,7 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
             </label>
             <input
               type="email"
-              value={email}
+              value={profile?.email || ''}
               disabled
               className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 focus:outline-none cursor-not-allowed"
             />
@@ -84,7 +87,7 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
             </button>
             <button
               type="submit"
-              disabled={isSaving || editName === nickname}
+              disabled={isSaving || editName === profile?.nickname}
               className="px-6 py-2.5 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? '저장 중...' : '저장하기'}

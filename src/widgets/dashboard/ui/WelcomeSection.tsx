@@ -1,16 +1,19 @@
 'use client';
 
+import { useProfile } from '@/features/user/profile/model/useProfile';
+
 type WelcomeSectionProps = {
-  nickname: string;
   statusMessage: string;
 };
 
-export const WelcomeSection = ({ nickname, statusMessage }: WelcomeSectionProps) => {
+export const WelcomeSection = ({ statusMessage }: WelcomeSectionProps) => {
+  const { profile } = useProfile();
+
   return (
     <div className="space-y-4 text-center sm:text-left">
       <p className="text-xs uppercase tracking-[0.35em] text-slate-500">dashboard</p>
       <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-        어서오세요, {nickname}님.
+        어서오세요, {profile?.nickname}님.
       </h1>
       <p className="text-base text-slate-600">{statusMessage}</p>
       <div className="grid gap-3 text-sm text-slate-500 sm:grid-cols-2">
