@@ -5,9 +5,9 @@ import Link from 'next/link';
 export const EmptyState = () => {
   return (
     <div className="border border-dashed border-slate-300 bg-white px-8 py-12 text-center">
-      <h3 className="text-2xl font-semibold text-slate-900">아직 만들어 둔 만다라트가 없어요.</h3>
+      <h3 className="text-2xl font-semibold text-slate-900">새로운 만다라트를 시작해 보세요.</h3>
       <p className="mt-3 text-base text-slate-500">
-        첫 번째 우주를 그려보면 다음 계획이 훨씬 또렷해집니다.
+        시작이 반입니다. 지금 바로 첫 번째 목표를 세워보세요.
       </p>
       <Link
         href="/mandalart/new"
