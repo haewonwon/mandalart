@@ -3,13 +3,17 @@
 import { useState } from 'react';
 import { FullMandalartBoard } from '@/widgets/mandalart-board/ui/FullMandalartBoard';
 import { useMandalartExport } from '@/features/mandalart/export/model/useMandalartExport';
-import type { MandalartGrid, MandalartSubGridKey } from '@/entities/mandalart/model/types';
-import { ArrowLeft, Download, Share2, GripHorizontal, Check } from 'lucide-react';
+import type { MandalartSubGridKey } from '@/entities/mandalart/model/types';
+import { ArrowLeft, Download, Share2, GripHorizontal, Check, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRecentMandalart } from '@/features/mandalart/view/model/useRecentMandalart';
+import type { MandalartGrid } from '@/entities/mandalart/model/types';
 
 export const MandalartFullViewPage = () => {
-  // Mock 데이터 대신 null로 초기화 (실제 데이터는 API 연동 시 로드)
-  const [data] = useState<MandalartGrid | null>(null);
+  // API 데이터 연동 (가장 최근 만다라트)
+  const { data: mandalart, isLoading } = useRecentMandalart();
+  const data = mandalart?.current_version?.content as MandalartGrid | undefined;
+
   const { exportRef, downloadImage, downloadPDF, isExporting } = useMandalartExport();
   const [isReorderMode, setIsReorderMode] = useState(false);
 
@@ -40,6 +44,31 @@ export const MandalartFullViewPage = () => {
   const handleReorderChange = (newOrder: (MandalartSubGridKey | 'center')[]) => {
     setOrderedPositions(newOrder);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+        <Loader2 className="animate-spin text-slate-400" size={32} />
+      </div>
+    );
+  }
+
+  // 데이터가 없는 경우 처리 (옵션)
+  if (!data) {
+    return (
+      <main className="flex flex-col flex-1 bg-slate-50 h-full">
+        <header className="sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 sm:px-6 flex items-center gap-4 shadow-sm">
+          <Link href="/" className="p-2 -ml-2 hover:bg-slate-100 rounded-full text-slate-600">
+            <ArrowLeft size={20} />
+          </Link>
+          <h1 className="font-semibold text-slate-900 text-lg">현재 만다라트 보기</h1>
+        </header>
+        <div className="flex flex-1 items-center justify-center p-8 text-slate-500">
+          표시할 만다라트가 없습니다. 먼저 만다라트를 생성해주세요.
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex flex-col flex-1 bg-slate-50 h-full">

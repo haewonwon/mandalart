@@ -2,11 +2,19 @@
 
 import { useCenterEdit } from '@/features/mandalart/edit-center/model/useCenterEdit';
 import { Grid3x3 } from '@/shared/ui/Grid';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 export const MandalartCenterViewPage = () => {
-  const { centerGrid, updateCenterCell, saveChanges, isSaving } = useCenterEdit();
+  const { centerGrid, updateCenterCell, saveChanges, isSaving, isLoading } = useCenterEdit();
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+        <Loader2 className="animate-spin text-slate-400" size={32} />
+      </div>
+    );
+  }
 
   return (
     <main className="flex flex-col flex-1 bg-slate-50 min-h-screen">
@@ -20,7 +28,7 @@ export const MandalartCenterViewPage = () => {
         </div>
 
         <button
-          onClick={saveChanges}
+          onClick={() => saveChanges()}
           disabled={isSaving}
           className="bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-800 transition flex items-center gap-2 disabled:opacity-50"
         >

@@ -1,6 +1,6 @@
 'use client';
 
-import { createClient } from '@/shared/lib/supabase';
+import { createClient } from '@/shared/lib/supabase/client';
 import type { Profile } from '@/entities/user/model/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 

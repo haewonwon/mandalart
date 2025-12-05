@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/shared/lib/supabase/client';
+import { useRecentMandalart } from '@/features/mandalart/view/model/useRecentMandalart';
 import type {
   MandalartCenterGrid,
-  MandalartCell,
   MandalartGrid,
   MandalartSubGridKey,
 } from '@/entities/mandalart/model/types';
+import { createEmptyGrid, createEmptyCell } from '@/shared/lib/constants';
 
 // 인덱스와 서브 그리드 키 매핑
 const INDEX_TO_SUBGRID_KEY: Partial<Record<number, MandalartSubGridKey>> = {
@@ -20,49 +23,33 @@ const INDEX_TO_SUBGRID_KEY: Partial<Record<number, MandalartSubGridKey>> = {
   8: 'southEast',
 };
 
-// 빈 셀 생성 헬퍼
-const createEmptyCell = (idPrefix: string): MandalartCell => ({
-  id: idPrefix,
-  label: '',
-  completed: false,
-});
-
-// 9x9 빈 그리드 생성
-const createEmptyGrid = (): MandalartGrid => {
-  const emptyCenter = Array.from({ length: 9 }, (_, i) =>
-    createEmptyCell(`center-${i}`)
-  ) as MandalartCenterGrid;
-
-  const emptySubGrids = Object.values(INDEX_TO_SUBGRID_KEY).reduce((acc, key) => {
-    if (key) {
-      acc[key] = Array.from({ length: 9 }, (_, i) =>
-        createEmptyCell(`${key}-${i}`)
-      ) as MandalartCenterGrid;
-    }
-    return acc;
-  }, {} as Record<MandalartSubGridKey, MandalartCenterGrid>);
-
-  return {
-    center: emptyCenter,
-    subGrids: emptySubGrids,
-  };
-};
-
 export const useCenterEdit = () => {
-  // 초기값은 빈 그리드로 설정 (추후 API 연동 시 로딩 처리 필요)
-  const [gridData, setGridData] = useState<MandalartGrid>(createEmptyGrid());
-  const [isSaving, setIsSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const { data: mandalart, isLoading: isDataLoading } = useRecentMandalart();
+
+  // 로컬 상태 (편집용)
+  const [gridData, setGridData] = useState<MandalartGrid | null>(null);
+
+  // 초기 데이터 로드 시 상태 동기화
+  useEffect(() => {
+    if (mandalart?.current_version?.content) {
+      setGridData(mandalart.current_version.content as MandalartGrid);
+    }
+  }, [mandalart]);
 
   const updateCenterCell = (index: number, newValue: string) => {
+    if (!gridData) return;
+
     const subGridKey = INDEX_TO_SUBGRID_KEY[index];
     const currentCell = gridData.center[index];
 
     // 변경사항이 없으면 리턴
     if (currentCell.label === newValue) return;
 
-    // 1. 하위 그리드가 존재하는지 확인 (값이 변경되었을 때만)
+    // 1. 하위 그리드가 존재하는지 확인
     const hasSubGrid =
       subGridKey &&
+      gridData.subGrids &&
       gridData.subGrids[subGridKey] &&
       gridData.subGrids[subGridKey]!.some((cell) => cell.label.trim() !== '');
 
@@ -80,15 +67,15 @@ export const useCenterEdit = () => {
 
     // 3. 상태 업데이트
     setGridData((prev) => {
+      if (!prev) return null;
       const next = { ...prev };
-      // 중심 그리드 업데이트
+      // 중심 그리드 업데이트 (불변성 유지)
       const nextCenter = [...prev.center] as MandalartCenterGrid;
       nextCenter[index] = { ...nextCenter[index], label: newValue };
       next.center = nextCenter;
 
-      // 하위 그리드 초기화 (사용자가 확인을 눌렀을 경우)
+      // 하위 그리드 초기화
       if (shouldResetSubGrid && subGridKey) {
-        // 해당 서브 그리드를 빈 셀들로 초기화
         next.subGrids = {
           ...next.subGrids,
           [subGridKey]: Array.from({ length: 9 }, (_, i) =>
@@ -101,24 +88,36 @@ export const useCenterEdit = () => {
     });
   };
 
-  const saveChanges = async () => {
-    setIsSaving(true);
-    try {
-      // TODO: Supabase 저장 로직 연동 (save_new_version RPC 호출)
-      await new Promise((resolve) => setTimeout(resolve, 500));
+  const { mutate: saveChanges, isPending: isSaving } = useMutation({
+    mutationFn: async () => {
+      if (!gridData || !mandalart) throw new Error('저장할 데이터가 없습니다.');
+      const supabase = createClient();
+
+      // 새 버전 저장 (save_new_version RPC)
+      const { error } = await supabase.rpc('save_new_version', {
+        p_mandalart_id: mandalart.id,
+        p_content: gridData,
+        p_version: (mandalart.current_version?.version || 0) + 1,
+        p_note: '핵심 목표 수정',
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
       alert('성공적으로 저장되었습니다.');
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['recentMandalart'] });
+    },
+    onError: (error: any) => {
       console.error(error);
-      alert('저장 중 오류가 발생했습니다.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
+      alert(error.message || '저장 중 오류가 발생했습니다.');
+    },
+  });
 
   return {
-    centerGrid: gridData.center,
+    centerGrid: gridData?.center || createEmptyGrid(),
     updateCenterCell,
     saveChanges,
     isSaving,
+    isLoading: isDataLoading,
   };
 };

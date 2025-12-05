@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createClient } from '@/shared/lib/supabase';
+import { createClient } from '@/shared/lib/supabase/client';
 
 export const useLogout = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,18 +9,13 @@ export const useLogout = () => {
     const supabase = createClient();
 
     try {
-      const { error } = await supabase.auth.signOut();
-
-      if (error) {
-        throw error;
-      }
-
-      alert('로그아웃되었습니다.');
+      await supabase.auth.signOut();
     } catch (error) {
       console.error('Logout error:', error);
-      alert('로그아웃에 실패했습니다.');
     } finally {
       setIsLoading(false);
+      // 에러가 발생하더라도 로그인 페이지로 이동하여 세션 종료 효과를 냄
+      window.location.href = '/login';
     }
   };
 

@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/shared/lib/supabase';
+import { createClient } from '@/shared/lib/supabase/client';
 import { MandalartCenterGrid, MandalartGrid } from '@/entities/mandalart/model/types';
 import { useNewMandalart } from './useNewMandalart';
 

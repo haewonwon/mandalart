@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createClient } from '@/shared/lib/supabase';
+import { createClient } from '@/shared/lib/supabase/client';
 
 export const useGoogleLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
