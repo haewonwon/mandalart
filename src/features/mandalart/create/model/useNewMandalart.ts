@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import type {
   MandalartCenterGrid,
-  MandalartCoreCell,
+  MandalartCell,
   MandalartGrid,
   MandalartSubGridKey,
 } from '@/entities/mandalart/model/types';
@@ -32,11 +32,11 @@ const SUBGRID_ORDER: MandalartSubGridKey[] = [
   'southEast',
 ];
 
-const createEmptyCell = (prefix: string, index: number): MandalartCoreCell => ({
+// updatedAt 제거
+const createEmptyCell = (prefix: string, index: number): MandalartCell => ({
   id: `${prefix}-${index}`,
   label: '',
   completed: false,
-  updatedAt: new Date().toISOString(),
 });
 
 export type SeedOption = {
@@ -85,22 +85,23 @@ export const useNewMandalart = ({ centerGrid }: UseNewMandalartParams) => {
       throw new Error('선택한 목표를 찾을 수 없습니다.');
     }
 
-    const timestamp = new Date().toISOString();
+    // updatedAt 제거
     const centerCells = Array.from({ length: 9 }, (_, index) =>
       index === CENTER_CELL_INDEX
         ? {
             id: targetSeed.id,
             label: targetSeed.label,
             completed: false,
-            updatedAt: timestamp,
           }
         : createEmptyCell(`seed-${targetSeed.id}`, index)
     ) as MandalartCenterGrid;
 
     const subGrids = SUBGRID_ORDER.reduce((acc, key) => {
-      acc[key] = Array.from({ length: 9 }, (_, index) => createEmptyCell(`${key}`, index));
+      acc[key] = Array.from({ length: 9 }, (_, index) =>
+        createEmptyCell(`${key}`, index)
+      ) as MandalartCenterGrid; // 타입 단언 추가 (Tuple 타입 보장)
       return acc;
-    }, {} as MandalartGrid['subGrids']);
+    }, {} as Record<MandalartSubGridKey, MandalartCenterGrid>);
 
     return {
       center: centerCells,

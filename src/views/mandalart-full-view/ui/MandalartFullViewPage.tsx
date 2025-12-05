@@ -7,33 +7,9 @@ import type { MandalartGrid, MandalartSubGridKey } from '@/entities/mandalart/mo
 import { ArrowLeft, Download, Share2, GripHorizontal, Check } from 'lucide-react';
 import Link from 'next/link';
 
-// Mock Data Generator
-const createMockMandalart = (): MandalartGrid => {
-  const createCells = (prefix: string) =>
-    Array.from({ length: 9 }, (_, i) => ({
-      id: `${prefix}-${i}`,
-      label: i === 4 ? `${prefix} 중심` : `${prefix} 목표 ${i + 1}`,
-      completed: false,
-      updatedAt: new Date().toISOString(),
-    }));
-
-  return {
-    center: createCells('Main') as any,
-    subGrids: {
-      northWest: createCells('NW'),
-      north: createCells('N'),
-      northEast: createCells('NE'),
-      west: createCells('W'),
-      east: createCells('E'),
-      southWest: createCells('SW'),
-      south: createCells('S'),
-      southEast: createCells('SE'),
-    } as any,
-  };
-};
-
 export const MandalartFullViewPage = () => {
-  const [data] = useState<MandalartGrid>(createMockMandalart());
+  // Mock 데이터 대신 null로 초기화 (실제 데이터는 API 연동 시 로드)
+  const [data] = useState<MandalartGrid | null>(null);
   const { exportRef, downloadImage, downloadPDF, isExporting } = useMandalartExport();
   const [isReorderMode, setIsReorderMode] = useState(false);
 

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type {
   MandalartCenterGrid,
+  MandalartCell,
   MandalartGrid,
   MandalartSubGridKey,
 } from '@/entities/mandalart/model/types';
@@ -19,27 +20,35 @@ const INDEX_TO_SUBGRID_KEY: Partial<Record<number, MandalartSubGridKey>> = {
   8: 'southEast',
 };
 
-// Mock Data 생성기
-const createMockData = (): MandalartGrid => {
-  const createCells = (prefix: string) =>
-    Array.from({ length: 9 }, (_, i) => ({
-      id: `${prefix}-${i}`,
-      label: i === 4 ? `${prefix} 중심` : `${prefix} 목표 ${i + 1}`,
-      completed: false,
-      updatedAt: new Date().toISOString(),
-    }));
+// 빈 셀 생성 헬퍼
+const createEmptyCell = (idPrefix: string): MandalartCell => ({
+  id: idPrefix,
+  label: '',
+  completed: false,
+});
+
+// 9x9 빈 그리드 생성
+const createEmptyGrid = (): MandalartGrid => {
+  const emptyCenter = Array.from({ length: 9 }, (_, i) =>
+    createEmptyCell(`center-${i}`)
+  ) as MandalartCenterGrid;
+
+  const emptySubGrids = Object.values(INDEX_TO_SUBGRID_KEY).reduce((acc, key) => {
+    acc[key] = Array.from({ length: 9 }, (_, i) =>
+      createEmptyCell(`${key}-${i}`)
+    ) as MandalartCenterGrid;
+    return acc;
+  }, {} as Record<MandalartSubGridKey, MandalartCenterGrid>);
 
   return {
-    center: createCells('Main') as any,
-    subGrids: {
-      northWest: createCells('NW'), // 존재하는 하위 그리드 예시
-      north: [], // 비어있는 하위 그리드 예시
-    } as any,
+    center: emptyCenter,
+    subGrids: emptySubGrids,
   };
 };
 
 export const useCenterEdit = () => {
-  const [gridData, setGridData] = useState<MandalartGrid>(createMockData());
+  // 초기값은 빈 그리드로 설정 (추후 API 연동 시 로딩 처리 필요)
+  const [gridData, setGridData] = useState<MandalartGrid>(createEmptyGrid());
   const [isSaving, setIsSaving] = useState(false);
 
   const updateCenterCell = (index: number, newValue: string) => {
@@ -77,15 +86,12 @@ export const useCenterEdit = () => {
 
       // 하위 그리드 초기화 (사용자가 확인을 눌렀을 경우)
       if (shouldResetSubGrid && subGridKey) {
-        // 해당 서브 그리드를 빈 배열(또는 초기화된 상태)로 변경
+        // 해당 서브 그리드를 빈 셀들로 초기화
         next.subGrids = {
           ...next.subGrids,
-          [subGridKey]: Array.from({ length: 9 }, (_, i) => ({
-            id: `${subGridKey}-${i}`,
-            label: '',
-            completed: false,
-            updatedAt: new Date().toISOString(),
-          })),
+          [subGridKey]: Array.from({ length: 9 }, (_, i) =>
+            createEmptyCell(`${subGridKey}-${i}`)
+          ) as MandalartCenterGrid,
         };
       }
 
@@ -96,7 +102,7 @@ export const useCenterEdit = () => {
   const saveChanges = async () => {
     setIsSaving(true);
     try {
-      // TODO: Supabase 저장 로직 연동
+      // TODO: Supabase 저장 로직 연동 (save_new_version RPC 호출)
       await new Promise((resolve) => setTimeout(resolve, 500));
       alert('성공적으로 저장되었습니다.');
     } catch (error) {

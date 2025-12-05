@@ -8,18 +8,6 @@ import { MandalartCellItem } from '@/entities/mandalart/ui/Cell';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-const developerSampleCenterGrid: MandalartCenterGrid = [
-  { id: 'c1', label: '창작', completed: false, updatedAt: new Date().toISOString() },
-  { id: 'c2', label: '운동', completed: false, updatedAt: new Date().toISOString() },
-  { id: 'c3', label: '', completed: false, updatedAt: new Date().toISOString() },
-  { id: 'c4', label: '', completed: false, updatedAt: new Date().toISOString() },
-  { id: 'c5', label: '만다라트 2025', completed: false, updatedAt: new Date().toISOString() },
-  { id: 'c6', label: '휴식', completed: false, updatedAt: new Date().toISOString() },
-  { id: 'c7', label: '', completed: false, updatedAt: new Date().toISOString() },
-  { id: 'c8', label: '학습', completed: false, updatedAt: new Date().toISOString() },
-  { id: 'c9', label: '', completed: false, updatedAt: new Date().toISOString() },
-];
-
 export const MandalartNewPage = () => {
   const [centerGrid, setCenterGrid] = useState<MandalartCenterGrid | null>(null);
   const [centerInputs, setCenterInputs] = useState<string[]>(() => Array(9).fill(''));
@@ -60,7 +48,6 @@ export const MandalartNewPage = () => {
       id: `center-${idx + 1}`,
       label: label.trim(),
       completed: false,
-      updatedAt: new Date().toISOString(),
     })) as MandalartCenterGrid;
 
     setCenterGrid(nextGrid);
@@ -68,10 +55,6 @@ export const MandalartNewPage = () => {
     setSelectedSeed('');
     setCommittedSeed(null);
     setGeneratedGrid(null);
-  };
-
-  const handleFillSample = () => {
-    setCenterInputs(developerSampleCenterGrid.map((cell) => cell.label));
   };
 
   const handleGenerate = () => {
@@ -100,7 +83,8 @@ export const MandalartNewPage = () => {
     setIsSaving(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      alert('만다라트를 저장했습니다. (Mock)');
+      // TODO: Supabase 저장 로직 연동
+      alert('만다라트 저장 기능이 곧 구현됩니다.');
     } finally {
       setIsSaving(false);
     }
@@ -148,13 +132,6 @@ export const MandalartNewPage = () => {
                 ))}
               </div>
               <div className="flex flex-col gap-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-                <button
-                  type="button"
-                  onClick={handleFillSample}
-                  className="text-slate-600 underline-offset-2 hover:underline"
-                >
-                  샘플 데이터 불러오기
-                </button>
                 <button
                   type="button"
                   onClick={handleCenterSave}
@@ -237,7 +214,7 @@ export const MandalartNewPage = () => {
                         {generatedGrid.center.map((cell, index) => (
                           <MandalartCellItem
                             key={cell.id}
-                            title={cell.label}
+                            label={cell.label}
                             isCenter={index === 4}
                           />
                         ))}

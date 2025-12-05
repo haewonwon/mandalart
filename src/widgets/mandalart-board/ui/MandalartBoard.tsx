@@ -1,38 +1,13 @@
-import type { MandalartCluster } from '@/entities/mandalart/model/types';
+import type { MandalartCenterGrid } from '@/entities/mandalart/model/types';
 import { MandalartCellItem } from '@/entities/mandalart/ui/Cell';
 import { Grid3x3 } from '@/shared/ui/Grid';
 
-const placeholderCluster: MandalartCluster = {
-  id: 'cluster-main',
-  centerCell: { id: 'cell-center', title: '핵심 목표', isCompleted: false },
-  surroundingCells: [
-    { id: 'cell-1', title: '목표 1', isCompleted: false },
-    { id: 'cell-2', title: '목표 2', isCompleted: false },
-    { id: 'cell-3', title: '목표 3', isCompleted: false },
-    { id: 'cell-4', title: '목표 4', isCompleted: false },
-    { id: 'cell-5', title: '목표 5', isCompleted: false },
-    { id: 'cell-6', title: '목표 6', isCompleted: false },
-    { id: 'cell-7', title: '목표 7', isCompleted: false },
-    { id: 'cell-8', title: '목표 8', isCompleted: false },
-  ],
-};
-
 type MandalartBoardProps = {
-  cluster?: MandalartCluster;
+  grid?: MandalartCenterGrid;
 };
 
-export const MandalartBoard = ({ cluster = placeholderCluster }: MandalartBoardProps) => {
-  const cells: MandalartCluster['surroundingCells'][number][] = [];
-  const surrounding = cluster.surroundingCells;
-
-  for (let index = 0, surroundIdx = 0; index < 9; index += 1) {
-    if (index === 4) {
-      cells.push(cluster.centerCell);
-      continue;
-    }
-    cells.push(surrounding[surroundIdx] ?? { id: `empty-${index}`, title: '', isCompleted: false });
-    surroundIdx += 1;
-  }
+export const MandalartBoard = ({ grid }: MandalartBoardProps) => {
+  const cells = grid || Array(9).fill({ id: 'empty', label: '', completed: false });
 
   return (
     <section className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -43,8 +18,8 @@ export const MandalartBoard = ({ cluster = placeholderCluster }: MandalartBoardP
       <Grid3x3 className="w-full">
         {cells.map((cell, index) => (
           <MandalartCellItem
-            key={cell.id ?? `cell-${index}`}
-            title={cell.title}
+            key={cell.id === 'empty' ? `empty-${index}` : cell.id}
+            label={cell.label}
             isCenter={index === 4}
           />
         ))}

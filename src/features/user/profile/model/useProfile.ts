@@ -25,7 +25,6 @@ export const useProfile = () => {
         if (user) {
           setUser(user);
           setEmail(user.email || '');
-          // 메타데이터에 저장된 이름 가져오기 (없으면 이메일 앞부분 사용)
           setNickname(user.user_metadata?.full_name || user.email?.split('@')[0] || '');
         }
       } catch (error) {

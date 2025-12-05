@@ -1,21 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import type { MandalartCenterGrid, MandalartCoreCell } from '@/entities/mandalart/model/types';
+import type { MandalartCenterGrid, MandalartCell } from '@/entities/mandalart/model/types';
 
-// Mock Data Generator
-const createMockSubGrid = (id: string): MandalartCenterGrid => {
+// 빈 서브 그리드 생성 헬퍼
+const createEmptySubGrid = (idPrefix: string): MandalartCenterGrid => {
   return Array.from({ length: 9 }, (_, i) => ({
-    id: `cell-${id}-${i}`,
-    label: i === 4 ? `목표 ${id}` : i % 2 === 0 ? `실천 계획 ${i + 1}` : '',
+    id: `${idPrefix}-${i}`,
+    label: '',
     completed: false,
-    updatedAt: new Date().toISOString(),
   })) as MandalartCenterGrid;
 };
 
 export const useMandalartDetail = (mandalartId: string) => {
-  // TODO: 실제로는 API를 통해 데이터를 가져와야 함
-  const [gridData, setGridData] = useState<MandalartCenterGrid>(createMockSubGrid(mandalartId));
+  // 초기값은 빈 그리드로 설정 (추후 API 연동 시 로딩 처리 필요)
+  const [gridData, setGridData] = useState<MandalartCenterGrid>(createEmptySubGrid(mandalartId));
   const [isSaving, setIsSaving] = useState(false);
 
   const updateCell = (index: number, newValue: string) => {
