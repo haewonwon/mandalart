@@ -1,94 +1,39 @@
 'use client';
 
-import { useState } from 'react';
-import type { MandalartCenterGrid, MandalartGrid } from '@/entities/mandalart/model/types';
-import { useNewMandalart } from '@/features/mandalart/create/model/useNewMandalart';
 import { Grid3x3 } from '@/shared/ui/Grid';
-import { MandalartCellItem } from '@/entities/mandalart/ui/Cell';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Pencil } from 'lucide-react';
+import { useCreateWizard } from '@/features/mandalart/create/model/useCreateWizard';
 
 export const MandalartNewPage = () => {
-  const [centerGrid, setCenterGrid] = useState<MandalartCenterGrid | null>(null);
-  const [centerInputs, setCenterInputs] = useState<string[]>(() => Array(9).fill(''));
-  const { needsCenter, seedOptions, canExpand, generateGridFromSeed } = useNewMandalart({
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 6 }, (_, i) => currentYear + i);
+
+  const {
+    // State
+    year,
+    setYear,
+    centerInputs,
     centerGrid,
-  });
-  const [selectedSeed, setSelectedSeed] = useState<string>('');
-  const [committedSeed, setCommittedSeed] = useState<string | null>(null);
-  const [generatedGrid, setGeneratedGrid] = useState<MandalartGrid | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+    generatedGrid,
+    selectedSeed,
+    setSelectedSeed,
+    committedSeed,
+    isLoading,
 
-  const handleSeedChange = (nextValue: string) => {
-    setSelectedSeed(nextValue);
-  };
+    // Computed
+    seedOptions,
+    canExpand,
 
-  const handleCenterInputChange = (index: number, value: string) => {
-    setCenterInputs((prev) => {
-      const next = [...prev];
-      next[index] = value;
-      return next;
-    });
-  };
-
-  const handleCenterSave = () => {
-    const centerLabel = centerInputs[4]?.trim();
-    const hasSurrounding = centerInputs.some((label, idx) => idx !== 4 && label.trim().length > 0);
-
-    if (!centerLabel) {
-      alert('가운데 목표를 입력해 주세요.');
-      return;
-    }
-    if (!hasSurrounding) {
-      alert('주변 목표를 최소 한 개 이상 입력해 주세요.');
-      return;
-    }
-
-    const nextGrid = centerInputs.map((label, idx) => ({
-      id: `center-${idx + 1}`,
-      label: label.trim(),
-      completed: false,
-    })) as MandalartCenterGrid;
-
-    setCenterGrid(nextGrid);
-    setCenterInputs(Array(9).fill(''));
-    setSelectedSeed('');
-    setCommittedSeed(null);
-    setGeneratedGrid(null);
-  };
-
-  const handleGenerate = () => {
-    if (!selectedSeed) return;
-    const needsConfirm = committedSeed && committedSeed !== selectedSeed;
-    if (needsConfirm && !window.confirm('변경하시겠습니까? 저장 안 했으면 날아갑니다.')) {
-      setSelectedSeed(committedSeed);
-      return;
-    }
-
-    try {
-      const nextGrid = generateGridFromSeed(selectedSeed);
-      setGeneratedGrid(nextGrid);
-      setCommittedSeed(selectedSeed);
-    } catch (error) {
-      console.error(error);
-      alert('만다라트 생성 중 오류가 발생했습니다.');
-    }
-  };
-
-  const handleSave = async () => {
-    if (!generatedGrid || !committedSeed) {
-      alert('생성된 만다라트가 없습니다.');
-      return;
-    }
-    setIsSaving(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      // TODO: Supabase 저장 로직 연동
-      alert('만다라트 저장 기능이 곧 구현됩니다.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    // Actions
+    handleCenterInputChange,
+    saveCenterGrid,
+    editCenterGrid,
+    handleSubGridInputChange,
+    expandGrid,
+    resetExpand,
+    saveMandalart,
+  } = useCreateWizard();
 
   return (
     <main className="flex flex-col flex-1 bg-slate-50 min-h-screen">
@@ -112,12 +57,61 @@ export const MandalartNewPage = () => {
             </p>
           </header>
 
-          {needsCenter ? (
+          {/* 1. 연도 선택 */}
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium text-slate-700">목표 연도</label>
+            <div className="relative inline-block">
+              <select
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+                className="appearance-none rounded-md border border-slate-300 bg-white pl-3 pr-8 py-2 text-sm font-medium text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-100 disabled:text-slate-500"
+                disabled={!!centerGrid}
+              >
+                {yearOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}년
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
+                size={16}
+              />
+            </div>
+          </div>
+
+          {/* Step 1 완료 상태 (요약) - Step 2 진행 중일 때 표시 */}
+          {centerGrid && (
+            <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-6 py-4 shadow-sm">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Step 1. 중심 만다라트
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg font-bold text-slate-900">{centerGrid[4].label}</span>
+                  <span className="text-sm text-slate-500">및 주변 목표 설정 완료</span>
+                </div>
+              </div>
+              <button
+                onClick={editCenterGrid}
+                className="group flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200 hover:text-slate-900"
+              >
+                <Pencil size={14} className="transition group-hover:scale-110" />
+                수정하기
+              </button>
+            </div>
+          )}
+
+          {/* 2. 중심 만다라트 입력 (Step 1) */}
+          {!centerGrid ? (
             <div className="space-y-5 rounded-lg bg-slate-100 px-6 py-5 text-sm text-slate-700">
-              <p>아직 중심 만다라트가 없어요.</p>
-              <p className="text-xs text-slate-500">
-                가운데 목표와 주변 목표 중 최소 하나를 입력해야 확장할 수 있습니다.
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="font-medium text-slate-900">Step 1. 중심 만다라트 만들기</p>
+                <p className="text-xs text-slate-500">
+                  가운데 목표와 주변 목표 중 최소 하나를 입력해야 합니다.
+                </p>
+              </div>
+
               <div className="grid grid-cols-3 gap-2">
                 {centerInputs.map((value, idx) => (
                   <input
@@ -131,10 +125,10 @@ export const MandalartNewPage = () => {
                   />
                 ))}
               </div>
-              <div className="flex flex-col gap-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={handleCenterSave}
+                  onClick={saveCenterGrid}
                   className="inline-flex items-center justify-center rounded-full border border-slate-900 px-5 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-900 hover:text-white"
                 >
                   중심 만다라트 저장하기
@@ -142,91 +136,118 @@ export const MandalartNewPage = () => {
               </div>
             </div>
           ) : (
+            /* Step 2. 확장하기 */
             <div className="space-y-6">
-              {!committedSeed && (
-                <>
-                  <div className="rounded-lg bg-slate-50 px-6 py-5">
-                    <h2 className="text-lg font-semibold text-slate-900">확장 조건</h2>
-                    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
-                      <li>가운데 만다라트가 존재해야 합니다.</li>
-                      <li>주변 목표 8개 중 최소 1개 이상이 작성되어야 합니다.</li>
-                      <li>확장할 목표를 선택하면 해당 목표를 중심으로 9x9 격자가 생성됩니다.</li>
-                    </ul>
+              <div className="rounded-lg bg-slate-50 px-6 py-5 border border-slate-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-slate-900">Step 2. 확장하기 (선택)</h2>
+                  <div className="flex items-center gap-3">
+                    {generatedGrid && (
+                      <button
+                        type="button"
+                        onClick={resetExpand}
+                        className="text-sm font-medium text-red-600 hover:text-red-700 underline underline-offset-4"
+                      >
+                        확장 취소
+                      </button>
+                    )}
+                    {!generatedGrid && (
+                      <button
+                        type="button"
+                        onClick={() => saveMandalart()}
+                        disabled={isLoading}
+                        className="text-sm font-medium text-slate-600 hover:text-slate-900 underline underline-offset-4"
+                      >
+                        여기서 저장하고 끝내기
+                      </button>
+                    )}
                   </div>
-
-                  {seedOptions.length === 0 && (
-                    <div className="rounded-lg bg-amber-50/80 px-6 py-5 text-sm text-amber-900">
-                      <p>작성된 주변 목표가 없어요.</p>
-                      <p className="mt-1">
-                        중심 만다라트에서 최소 한 개 이상의 목표를 입력해 주세요.
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {seedOptions.length > 0 && (
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-slate-700">
-                    확장할 목표 선택
-                    <select
-                      className="mt-2 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
-                      value={selectedSeed}
-                      onChange={(event) => handleSeedChange(event.target.value)}
-                      disabled={!canExpand}
-                    >
-                      <option value="">목표를 선택하세요</option>
-                      {seedOptions.map((option) => (
-                        <option key={option.id} value={option.id}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <button
-                      type="button"
-                      disabled={!canExpand || !selectedSeed}
-                      onClick={handleGenerate}
-                      className="flex-1 rounded-full border border-slate-900 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {committedSeed
-                        ? '선택한 목표로 다시 생성하기'
-                        : '선택한 목표로 만다라트 생성하기'}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={!generatedGrid || isSaving}
-                      onClick={handleSave}
-                      className="flex-1 rounded-full border border-slate-900 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {isSaving ? '저장 중...' : '현재 상태 저장'}
-                    </button>
-                  </div>
-
-                  {generatedGrid && (
-                    <div className="space-y-3 rounded-lg bg-slate-50 px-6 py-5">
-                      <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500">
-                        new center grid
-                      </h3>
-                      <Grid3x3 className="gap-1">
-                        {generatedGrid.center.map((cell, index) => (
-                          <MandalartCellItem
-                            key={cell.id}
-                            label={cell.label}
-                            isCenter={index === 4}
-                          />
-                        ))}
-                      </Grid3x3>
-                      <p className="text-xs text-slate-500">
-                        선택한 목표를 중심으로 새로운 3x3 정열이 생성되었습니다. 주변 8칸을 채워
-                        보세요.
-                      </p>
-                    </div>
-                  )}
                 </div>
-              )}
+
+                {!committedSeed && (
+                  <div className="text-sm text-slate-600 space-y-2">
+                    <p>중심 만다라트가 설정되었습니다.</p>
+                    {seedOptions.length === 0 ? (
+                      <p className="text-amber-600">확장 가능한 주변 목표가 없습니다.</p>
+                    ) : (
+                      <p>아래에서 목표를 선택하여 9x9 만다라트로 확장할 수 있습니다.</p>
+                    )}
+                  </div>
+                )}
+
+                {seedOptions.length > 0 && (
+                  <div className="mt-4 space-y-4">
+                    <label className="block text-sm font-medium text-slate-700">
+                      확장할 목표 선택
+                      <select
+                        className="mt-2 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
+                        value={selectedSeed}
+                        onChange={(event) => setSelectedSeed(event.target.value)}
+                        disabled={!canExpand}
+                      >
+                        <option value="">목표를 선택하세요</option>
+                        {seedOptions.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <button
+                        type="button"
+                        disabled={!canExpand || !selectedSeed}
+                        onClick={expandGrid}
+                        className="flex-1 rounded-full border border-slate-900 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {committedSeed
+                          ? '선택한 목표로 다시 생성하기'
+                          : '선택한 목표로 만다라트 생성하기'}
+                      </button>
+
+                      {generatedGrid && (
+                        <button
+                          type="button"
+                          disabled={isLoading}
+                          onClick={() => saveMandalart()}
+                          className="flex-1 rounded-full bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {isLoading ? '저장 중...' : '최종 저장하기'}
+                        </button>
+                      )}
+                    </div>
+
+                    {generatedGrid && (
+                      <div className="space-y-3 rounded-lg bg-white border border-slate-200 px-6 py-5 mt-4">
+                        <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500">
+                          세부 목표 설정
+                        </h3>
+                        <Grid3x3 className="gap-2">
+                          {generatedGrid.center.map((cell, index) => (
+                            <input
+                              key={cell.id}
+                              value={cell.label}
+                              onChange={(e) => handleSubGridInputChange(index, e.target.value)}
+                              disabled={index === 4}
+                              placeholder={index === 4 ? '' : `세부 목표 ${index + 1}`}
+                              className={`w-full aspect-square p-2 text-center text-sm border rounded focus:border-slate-900 focus:outline-none
+                                ${
+                                  index === 4
+                                    ? 'bg-slate-100 font-bold text-slate-900 cursor-default'
+                                    : 'bg-white'
+                                }`}
+                            />
+                          ))}
+                        </Grid3x3>
+                        <p className="text-xs text-slate-500">
+                          * 선택한 목표가 중심으로 이동했습니다. 나머지 8칸을 자유롭게 채워보세요.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </section>
