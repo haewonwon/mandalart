@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/shared/lib/supabase/client';
-import { useRecentMandalart } from '@/features/mandalart/view/model/useRecentMandalart';
+import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
 import type {
   MandalartCenterGrid,
   MandalartGrid,
@@ -23,9 +23,14 @@ const INDEX_TO_SUBGRID_KEY: Partial<Record<number, MandalartSubGridKey>> = {
   8: 'southEast',
 };
 
-export const useCenterEdit = () => {
+export const useCenterEdit = (selectedYear: number | null) => {
   const queryClient = useQueryClient();
-  const { data: mandalart, isLoading: isDataLoading } = useRecentMandalart();
+  const { data: mandalarts = [], isLoading: isDataLoading } = useAllMandalarts();
+
+  // 선택된 연도의 만다라트 필터링 (가장 최근 업데이트된 것)
+  const mandalart = mandalarts
+    .filter((m) => m.year === selectedYear)
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
 
   // 로컬 상태 (편집용)
   const [gridData, setGridData] = useState<MandalartGrid | null>(null);

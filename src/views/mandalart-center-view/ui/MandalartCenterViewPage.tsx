@@ -1,14 +1,30 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useCenterEdit } from '@/features/mandalart/edit-center/model/useCenterEdit';
+import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
 import { Grid3x3 } from '@/shared/ui/Grid';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 export const MandalartCenterViewPage = () => {
-  const { centerGrid, updateCenterCell, saveChanges, isSaving, isLoading } = useCenterEdit();
+  // 모든 만다라트 조회
+  const { data: mandalarts = [], isLoading: isMandalartsLoading } = useAllMandalarts();
+  
+  // 연도 필터 상태
+  const years = Array.from(new Set(mandalarts.map((m) => m.year))).sort((a, b) => b - a);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
-  if (isLoading) {
+  // 기본값으로 가장 최근 연도 선택
+  useEffect(() => {
+    if (years.length > 0 && selectedYear === null) {
+      setSelectedYear(years[0]);
+    }
+  }, [years, selectedYear]);
+
+  const { centerGrid, updateCenterCell, saveChanges, isSaving, isLoading } = useCenterEdit(selectedYear);
+
+  if (isLoading || isMandalartsLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-slate-50">
         <Loader2 className="animate-spin text-slate-400" size={32} />
@@ -19,22 +35,43 @@ export const MandalartCenterViewPage = () => {
   return (
     <main className="flex flex-col flex-1 bg-slate-50 min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 sm:px-6 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="p-2 -ml-2 hover:bg-slate-100 rounded-full text-slate-600">
-            <ArrowLeft size={20} />
-          </Link>
-          <h1 className="font-semibold text-slate-900 text-lg">핵심 만다라트 보기</h1>
+      <header className="sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 sm:px-6 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard" className="p-2 -ml-2 hover:bg-slate-100 rounded-full text-slate-600">
+              <ArrowLeft size={20} />
+            </Link>
+            <h1 className="font-semibold text-slate-900 text-lg">핵심 만다라트 보기</h1>
+          </div>
+
+          <button
+            onClick={() => saveChanges()}
+            disabled={isSaving}
+            className="bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-800 transition flex items-center gap-2 disabled:opacity-50"
+          >
+            <Save size={16} />
+            <span className="hidden sm:inline">{isSaving ? '저장 중...' : '저장하기'}</span>
+          </button>
         </div>
 
-        <button
-          onClick={() => saveChanges()}
-          disabled={isSaving}
-          className="bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-800 transition flex items-center gap-2 disabled:opacity-50"
-        >
-          <Save size={16} />
-          <span className="hidden sm:inline">{isSaving ? '저장 중...' : '저장하기'}</span>
-        </button>
+        {/* 연도 필터 */}
+        {years.length > 0 && (
+          <div className="flex items-center gap-2 border-t border-slate-100 pt-3">
+            {years.map((year) => (
+              <button
+                key={year}
+                onClick={() => setSelectedYear(year)}
+                className={`px-4 py-2 text-sm font-medium transition-colors rounded-md ${
+                  selectedYear === year
+                    ? 'bg-slate-900 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {year}년
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
       {/* Content */}
