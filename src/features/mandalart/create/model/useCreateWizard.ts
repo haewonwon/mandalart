@@ -50,18 +50,20 @@ export const useCreateWizard = ({
     const hasSurrounding = centerInputs.some((label, idx) => idx !== 4 && label.trim().length > 0);
 
     if (!centerLabel) {
-      alert('핵심 목표를 입력해 주세요.');
-      return false;
+      return { valid: false, message: '핵심 목표를 입력해 주세요.' };
     }
     if (!hasSurrounding) {
-      alert('세부 목표를 최소 한 개 이상 입력해 주세요.');
-      return false;
+      return { valid: false, message: '세부 목표를 최소 한 개 이상 입력해 주세요.' };
     }
-    return true;
+    return { valid: true };
   }, [centerInputs]);
 
-  const saveCenterGrid = () => {
-    if (!validateCenter()) return;
+  const saveCenterGrid = (onError?: (message: string) => void) => {
+    const validation = validateCenter();
+    if (!validation.valid && validation.message) {
+      onError?.(validation.message);
+      return;
+    }
 
     const nextGrid = centerInputs.map((label, idx) => ({
       id: `center-${idx + 1}`,
@@ -73,13 +75,20 @@ export const useCreateWizard = ({
     setStep('EXPAND_GRID');
   };
 
-  const editCenterGrid = () => {
-    if (
-      generatedGrid &&
-      !window.confirm('핵심 만다라트를 수정하시겠습니까? 확장된 내용은 초기화됩니다.')
-    ) {
-      return;
+  const editCenterGrid = (onNeedsConfirm?: () => void) => {
+    if (generatedGrid && onNeedsConfirm) {
+      onNeedsConfirm(); // 상위에서 확인 받도록 콜백 호출
+      return; // 확인 후 실제 edit이 호출될 때까지 대기
     }
+    // 확인이 완료되었거나 generatedGrid가 없으면 진행
+    setCenterGrid(null);
+    setGeneratedGrid(null);
+    setCommittedSeed(null);
+    setSelectedSeed('');
+    setStep('CORE_GRID');
+  };
+  
+  const doEditCenterGrid = () => {
     setCenterGrid(null);
     setGeneratedGrid(null);
     setCommittedSeed(null);
@@ -99,31 +108,42 @@ export const useCreateWizard = ({
     });
   };
 
-  const expandGrid = () => {
+  const expandGrid = (onNeedsConfirm?: () => void) => {
     if (!selectedSeed) return;
 
     const needsConfirm = committedSeed && committedSeed !== selectedSeed;
-    if (needsConfirm && !window.confirm('변경하시겠습니까? 저장하지 않은 내용은 사라집니다.')) {
-      setSelectedSeed(committedSeed || '');
-      return;
+    if (needsConfirm && onNeedsConfirm) {
+      onNeedsConfirm(); // 상위에서 확인 받도록 콜백 호출
+      return; // 확인 후 doExpandGrid가 호출될 때까지 대기
     }
 
+    doExpandGrid();
+  };
+  
+  const doExpandGrid = () => {
+    if (!selectedSeed) return;
     try {
       const nextGrid = generateGridFromSeed(selectedSeed);
       setGeneratedGrid(nextGrid);
       setCommittedSeed(selectedSeed);
     } catch (error) {
       console.error(error);
-      alert('만다라트 생성 중 오류가 발생했습니다.');
+      throw new Error('만다라트 생성 중 오류가 발생했습니다.');
     }
   };
 
-  const resetExpand = () => {
-    if (window.confirm('확장된 내용을 초기화하시겠습니까? 입력한 내용은 사라집니다.')) {
-      setGeneratedGrid(null);
-      setCommittedSeed(null);
-      setSelectedSeed('');
+  const resetExpand = (onNeedsConfirm?: () => void) => {
+    if (onNeedsConfirm) {
+      onNeedsConfirm(); // 상위에서 확인 받도록 콜백 호출
+      return; // 확인 후 doResetExpand가 호출될 때까지 대기
     }
+    doResetExpand();
+  };
+  
+  const doResetExpand = () => {
+    setGeneratedGrid(null);
+    setCommittedSeed(null);
+    setSelectedSeed('');
   };
 
   // 3. React Query Mutation (API 연동)
@@ -163,7 +183,7 @@ export const useCreateWizard = ({
       return data; // 생성된 ID 반환
     },
     onSuccess: () => {
-      alert('저장되었습니다.');
+      // 성공 메시지는 상위 컴포넌트에서 Modal로 처리
       // 대시보드 데이터 갱신 등을 위해 쿼리 무효화 (필요 시)
       // queryClient.invalidateQueries({ queryKey: ['mandalarts'] });
 
@@ -172,7 +192,7 @@ export const useCreateWizard = ({
     },
     onError: (error: any) => {
       console.error('Save Error:', error);
-      alert(error.message || '저장 중 오류가 발생했습니다.');
+      // 에러는 상위 컴포넌트에서 Modal로 처리
     },
   });
 
@@ -197,9 +217,13 @@ export const useCreateWizard = ({
     handleCenterInputChange,
     saveCenterGrid,
     editCenterGrid,
+    doEditCenterGrid,
     handleSubGridInputChange,
     expandGrid,
+    doExpandGrid,
     resetExpand,
+    doResetExpand,
     saveMandalart,
   };
 };
+

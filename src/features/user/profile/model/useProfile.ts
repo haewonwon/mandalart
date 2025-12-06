@@ -87,14 +87,14 @@ export const useProfile = () => {
         queryClient.setQueryData(['profile'], context.previousData);
       }
       console.error('Failed to update profile:', error);
-      alert('프로필 수정 중 오류가 발생했습니다.');
+      // 에러는 상위 컴포넌트에서 Modal로 처리
     },
     // 성공/실패 관계없이 서버 데이터로 동기화
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
     },
     onSuccess: () => {
-      alert('프로필이 수정되었습니다.');
+      // 성공 메시지는 상위 컴포넌트에서 Modal로 처리
     },
   });
 

@@ -46,7 +46,11 @@ export const useCenterEdit = (selectedYear: number | null) => {
     }
   }, [mandalart]);
 
-  const updateCenterCell = (index: number, newValue: string) => {
+  const updateCenterCell = (
+    index: number,
+    newValue: string,
+    onNeedsConfirm?: () => void
+  ) => {
     if (!gridData) return;
 
     const subGridKey = INDEX_TO_SUBGRID_KEY[index];
@@ -62,49 +66,17 @@ export const useCenterEdit = (selectedYear: number | null) => {
       gridData.subGrids[subGridKey] &&
       gridData.subGrids[subGridKey]!.some((cell) => cell.label.trim() !== '');
 
-    let shouldResetSubGrid = false;
-
-    // 2. 하위 그리드가 있다면 사용자에게 물어봄
-    if (hasSubGrid) {
-      const message =
-        `'${currentCell.label}' 목표는 이미 확장된 만다라트가 존재합니다.\n\n` +
-        `확인을 누르면 하위 만다라트가 초기화됩니다.\n` +
-        `취소를 누르면 하위 만다라트는 유지되고 제목만 변경됩니다.`;
-
-      shouldResetSubGrid = window.confirm(message);
+    // 2. 하위 그리드가 있다면 상위 컴포넌트에서 확인 받기
+    if (hasSubGrid && onNeedsConfirm) {
+      onNeedsConfirm(); // 상위에서 확인 받도록 콜백 호출
+      return; // 확인 후 applyUpdateWithReset이 호출될 때까지 대기
     }
 
-    // 3. 상태 업데이트
-    setGridData((prev) => {
-      if (!prev) return null;
-      const next = { ...prev };
-      // 중심 그리드 업데이트 (불변성 유지)
-      const nextCenter = [...prev.center] as MandalartCenterGrid;
-      nextCenter[index] = { ...nextCenter[index], label: newValue };
-      next.center = nextCenter;
-
-      // 하위 그리드 초기화
-      if (shouldResetSubGrid && subGridKey) {
-        next.subGrids = {
-          ...next.subGrids,
-          [subGridKey]: Array.from({ length: 9 }, (_, i) =>
-            createEmptyCell(`${subGridKey}-${i}`)
-          ) as MandalartCenterGrid,
-        };
-      }
-
-      return next;
-    });
-
-    // 변경된 셀 추적
-    setChangedCells((prev) => {
-      const existing = prev.find((c) => c.cellIndex === index);
-      if (existing) return prev;
-      return [...prev, { gridKey: 'center', cellIndex: index }];
-    });
+    // 3. 하위 그리드가 없거나 확인이 필요 없는 경우 바로 업데이트
+    applyUpdateWithReset(index, newValue, false);
   };
 
-  const { mutate: saveChanges, isPending: isSaving } = useMutation({
+  const { mutate, mutateAsync, isPending: isSaving } = useMutation({
     mutationFn: async () => {
       if (!gridData || !mandalart) throw new Error('저장할 데이터가 없습니다.');
       const supabase = createClient();
@@ -138,7 +110,7 @@ export const useCenterEdit = (selectedYear: number | null) => {
       setChangedCells([]);
     },
     onSuccess: () => {
-      alert('성공적으로 저장되었습니다.');
+      // 성공 메시지는 상위 컴포넌트에서 Modal로 처리
       // 대시보드에도 반영되도록 모든 관련 쿼리 무효화
       queryClient.invalidateQueries({ queryKey: ['recentMandalart'] });
       queryClient.invalidateQueries({ queryKey: ['allMandalarts'] });
@@ -146,14 +118,47 @@ export const useCenterEdit = (selectedYear: number | null) => {
     },
     onError: (error: any) => {
       console.error(error);
-      alert(error.message || '저장 중 오류가 발생했습니다.');
+      // 에러는 상위 컴포넌트에서 Modal로 처리
     },
   });
+
+  // 하위 그리드 초기화를 위한 내부 함수
+  const applyUpdateWithReset = (index: number, newValue: string, shouldReset: boolean) => {
+    if (!gridData) return;
+    const subGridKey = INDEX_TO_SUBGRID_KEY[index];
+
+    setGridData((prev) => {
+      if (!prev) return null;
+      const next = { ...prev };
+      const nextCenter = [...prev.center] as MandalartCenterGrid;
+      nextCenter[index] = { ...nextCenter[index], label: newValue };
+      next.center = nextCenter;
+
+      if (shouldReset && subGridKey) {
+        next.subGrids = {
+          ...next.subGrids,
+          [subGridKey]: Array.from({ length: 9 }, (_, i) =>
+            createEmptyCell(`${subGridKey}-${i}`)
+          ) as MandalartCenterGrid,
+        };
+      }
+
+      return next;
+    });
+
+    setChangedCells((prev) => {
+      const existing = prev.find((c) => c.cellIndex === index);
+      if (existing) return prev;
+      return [...prev, { gridKey: 'center', cellIndex: index }];
+    });
+  };
 
   return {
     centerGrid: gridData?.center || createEmptyGrid(),
     updateCenterCell,
-    saveChanges,
+    applyUpdateWithReset,
+    saveChanges: mutate,
+    saveChangesAsync: mutateAsync,
     isSaving,
     isLoading: isDataLoading,
   };

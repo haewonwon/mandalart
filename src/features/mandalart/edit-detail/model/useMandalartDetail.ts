@@ -174,21 +174,21 @@ export const useMandalartDetail = (id: string | undefined) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      alert('성공적으로 저장되었습니다.');
+      // 성공 메시지는 상위 컴포넌트에서 Modal로 처리
       queryClient.invalidateQueries({ queryKey: ['mandalart', mandalartId] });
       queryClient.invalidateQueries({ queryKey: ['allMandalarts'] });
       queryClient.invalidateQueries({ queryKey: ['mandalartVersions'] });
     },
     onError: (error: any) => {
       console.error(error);
-      alert(error.message || '저장 중 오류가 발생했습니다.');
+      // 에러는 상위 컴포넌트에서 Modal로 처리
     },
   });
 
   return {
     gridData: localGridData,
     updateCell,
-    saveChanges,
+    saveChanges: mutate,
     isSaving,
     isLoading: isDataLoading,
   };

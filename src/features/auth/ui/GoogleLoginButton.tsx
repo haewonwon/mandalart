@@ -1,6 +1,8 @@
 'use client';
 
 import { useGoogleLogin } from '@/features/auth/model/useGoogleLogin';
+import { useModal } from '@/shared/hooks/useModal';
+import { AlertModal } from '@/shared/ui/AlertModal';
 
 const GoogleIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-5 w-5">
@@ -24,18 +26,41 @@ const GoogleIcon = () => (
 );
 
 export const GoogleLoginButton = () => {
+  const modal = useModal();
   const { login, isLoading } = useGoogleLogin();
 
+  const handleLogin = async () => {
+    try {
+      await login();
+    } catch (error) {
+      modal.alert.show({
+        type: 'error',
+        message: 'Google 로그인에 실패했습니다.',
+      });
+    }
+  };
+
   return (
-    <button
-      type="button"
-      onClick={login}
-      disabled={isLoading}
-      className="flex w-full items-center justify-center gap-3 rounded-full border border-[#dadce0] bg-white px-5 py-3 text-base font-semibold text-slate-800 transition hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70"
-      aria-label="Google 계정으로 계속하기"
-    >
-      <GoogleIcon />
-      {isLoading ? '계정 확인 중...' : 'Google 계정으로 시작하기'}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={handleLogin}
+        disabled={isLoading}
+        className="flex w-full items-center justify-center gap-3 rounded-full border border-[#dadce0] bg-white px-5 py-3 text-base font-semibold text-slate-800 transition hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70"
+        aria-label="Google 계정으로 계속하기"
+      >
+        <GoogleIcon />
+        {isLoading ? '계정 확인 중...' : 'Google 계정으로 시작하기'}
+      </button>
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={modal.alert.isOpen}
+        onClose={modal.alert.hide}
+        title={modal.alert.title}
+        message={modal.alert.message}
+        type={modal.alert.type}
+      />
+    </>
   );
 };

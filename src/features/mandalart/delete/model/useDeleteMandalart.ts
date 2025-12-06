@@ -19,7 +19,7 @@ export const useDeleteMandalart = () => {
     },
     onError: (error: any) => {
       console.error('Delete Error:', error);
-      alert(error.message || '삭제 중 오류가 발생했습니다.');
+      // 에러는 상위 컴포넌트에서 Modal로 처리
     },
   });
 };

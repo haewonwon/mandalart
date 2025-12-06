@@ -37,7 +37,7 @@ export const useReorderMandalart = (selectedMandalart: Mandalart | null) => {
     },
     onError: (err) => {
       console.error(err);
-      alert('재배치 저장 실패');
+      // 에러는 상위 컴포넌트에서 Modal로 처리
     },
   });
 };
