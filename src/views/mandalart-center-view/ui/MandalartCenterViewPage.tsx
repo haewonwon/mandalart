@@ -1,13 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCenterEdit } from '@/features/mandalart/edit-center/model/useCenterEdit';
 import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
 import { Grid3x3 } from '@/shared/ui/Grid';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useModal } from '@/shared/hooks/useModal';
+import { AlertModal } from '@/shared/ui/AlertModal';
+import { ConfirmModal } from '@/shared/ui/ConfirmModal';
+import { formatError } from '@/shared/lib/error/formatError';
 
 export const MandalartCenterViewPage = () => {
+  const modal = useModal();
+  const pendingUpdateRef = useRef<{ index: number; value: string } | null>(null);
+  
   // 모든 만다라트 조회
   const { data: mandalarts = [], isLoading: isMandalartsLoading } = useAllMandalarts();
   
@@ -22,7 +29,52 @@ export const MandalartCenterViewPage = () => {
     }
   }, [years, selectedYear]);
 
-  const { centerGrid, updateCenterCell, saveChanges, isSaving, isLoading } = useCenterEdit(selectedYear);
+  const { centerGrid, updateCenterCell, applyUpdateWithReset, saveChanges, isSaving, isLoading } = useCenterEdit(selectedYear);
+  
+  const handleUpdateCell = (index: number, newValue: string) => {
+    updateCenterCell(index, newValue, () => {
+      // 하위 그리드가 있어서 확인이 필요한 경우
+      pendingUpdateRef.current = { index, value: newValue };
+      const currentCell = centerGrid[index];
+      modal.confirm.show({
+        title: '하위 만다라트 초기화',
+        message: `'${currentCell.label}' 목표는 이미 확장된 만다라트가 존재합니다.\n\n확인을 누르면 하위 만다라트가 초기화됩니다.\n취소를 누르면 하위 만다라트는 유지되고 제목만 변경됩니다.`,
+        type: 'warning',
+        confirmText: '초기화',
+        cancelText: '취소',
+        onConfirm: () => {
+          if (pendingUpdateRef.current) {
+            applyUpdateWithReset(pendingUpdateRef.current.index, pendingUpdateRef.current.value, true);
+            pendingUpdateRef.current = null;
+          }
+        },
+        onCancel: () => {
+          // 취소를 눌렀을 때도 제목은 변경 (하위 그리드는 유지)
+          if (pendingUpdateRef.current) {
+            applyUpdateWithReset(pendingUpdateRef.current.index, pendingUpdateRef.current.value, false);
+            pendingUpdateRef.current = null;
+          }
+        },
+      });
+    });
+  };
+  
+  const handleSave = () => {
+    saveChanges(undefined, {
+      onSuccess: () => {
+        modal.alert.show({
+          type: 'success',
+          message: '성공적으로 저장되었습니다.',
+        });
+      },
+      onError: (error: any) => {
+        modal.alert.show({
+          type: 'error',
+          message: formatError(error, '저장 중 오류가 발생했습니다.'),
+        });
+      },
+    });
+  };
 
   if (isLoading || isMandalartsLoading) {
     return (
@@ -45,7 +97,7 @@ export const MandalartCenterViewPage = () => {
           </div>
 
           <button
-            onClick={() => saveChanges()}
+            onClick={handleSave}
             disabled={isSaving}
             className="bg-slate-900 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium hover:bg-slate-800 transition flex items-center gap-1.5 sm:gap-2 disabled:opacity-50"
           >
@@ -94,7 +146,7 @@ export const MandalartCenterViewPage = () => {
                   <div key={cell.id} className="relative h-full min-w-0 min-h-0">
                     <textarea
                       value={cell.label}
-                      onChange={(e) => updateCenterCell(index, e.target.value)}
+                      onChange={(e) => handleUpdateCell(index, e.target.value)}
                       className={`w-full h-full resize-none p-1.5 sm:p-3 rounded-lg text-center flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-slate-900 transition text-[10px] sm:text-base font-medium leading-tight
                         ${
                           isCenter
@@ -117,6 +169,28 @@ export const MandalartCenterViewPage = () => {
           </div>
         </section>
       </div>
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={modal.alert.isOpen}
+        onClose={modal.alert.hide}
+        title={modal.alert.title}
+        message={modal.alert.message}
+        type={modal.alert.type}
+      />
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={modal.confirm.isOpen}
+        onClose={modal.confirm.hide}
+        onConfirm={modal.confirm.onConfirm}
+        onCancel={modal.confirm.onCancel}
+        title={modal.confirm.title}
+        message={modal.confirm.message}
+        confirmText={modal.confirm.confirmText}
+        cancelText={modal.confirm.cancelText}
+        type={modal.confirm.type}
+      />
     </main>
   );
 };

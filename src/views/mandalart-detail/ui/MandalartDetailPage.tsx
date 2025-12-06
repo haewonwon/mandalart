@@ -4,6 +4,9 @@ import { useMandalartDetail } from '@/features/mandalart/edit-detail/model/useMa
 import { Grid3x3 } from '@/shared/ui/Grid';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useModal } from '@/shared/hooks/useModal';
+import { AlertModal } from '@/shared/ui/AlertModal';
+import { formatError } from '@/shared/lib/error/formatError';
 
 type MandalartDetailPageProps = {
   params: {
@@ -13,7 +16,25 @@ type MandalartDetailPageProps = {
 
 export const MandalartDetailPage = ({ params }: MandalartDetailPageProps) => {
   const { id } = params;
+  const modal = useModal();
   const { gridData, updateCell, saveChanges, isSaving, isLoading } = useMandalartDetail(id);
+  
+  const handleSave = () => {
+    saveChanges(undefined, {
+      onSuccess: () => {
+        modal.alert.show({
+          type: 'success',
+          message: '성공적으로 저장되었습니다.',
+        });
+      },
+      onError: (error: any) => {
+        modal.alert.show({
+          type: 'error',
+          message: formatError(error, '저장 중 오류가 발생했습니다.'),
+        });
+      },
+    });
+  };
 
   if (isLoading) {
     return (
@@ -35,7 +56,7 @@ export const MandalartDetailPage = ({ params }: MandalartDetailPageProps) => {
         </div>
 
         <button
-          onClick={() => saveChanges()}
+          onClick={handleSave}
           disabled={isSaving}
           className="bg-slate-900 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium hover:bg-slate-800 transition flex items-center gap-1.5 sm:gap-2 disabled:opacity-50"
         >
@@ -86,6 +107,15 @@ export const MandalartDetailPage = ({ params }: MandalartDetailPageProps) => {
           </div>
         </section>
       </div>
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={modal.alert.isOpen}
+        onClose={modal.alert.hide}
+        title={modal.alert.title}
+        message={modal.alert.message}
+        type={modal.alert.type}
+      />
     </main>
   );
 };

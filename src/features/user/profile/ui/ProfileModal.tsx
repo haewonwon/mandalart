@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { useProfile } from '../model/useProfile';
 import { X, User as UserIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { useModal } from '@/shared/hooks/useModal';
+import { AlertModal } from '@/shared/ui/AlertModal';
+import { formatError } from '@/shared/lib/error/formatError';
 
 type ProfileModalProps = {
   isOpen: boolean;
@@ -11,6 +14,7 @@ type ProfileModalProps = {
 };
 
 export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
+  const modal = useModal();
   const { profile, updateProfile, isSaving } = useProfile();
   const [editName, setEditName] = useState('');
 
@@ -23,9 +27,20 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await updateProfile(editName);
-    if (success) {
-      onClose();
+    try {
+      await updateProfile(editName);
+      modal.alert.show({
+        type: 'success',
+        message: '프로필이 수정되었습니다.',
+      });
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    } catch (error: any) {
+      modal.alert.show({
+        type: 'error',
+        message: formatError(error, '프로필 수정 중 오류가 발생했습니다.'),
+      });
     }
   };
 
@@ -33,6 +48,7 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
 
   // Portal을 사용하여 body 바로 아래에 렌더링
   return createPortal(
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between mb-6">
@@ -95,7 +111,17 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
           </div>
         </form>
       </div>
-    </div>,
+    </div>
+
+    {/* Alert Modal */}
+    <AlertModal
+      isOpen={modal.alert.isOpen}
+      onClose={modal.alert.hide}
+      title={modal.alert.title}
+      message={modal.alert.message}
+      type={modal.alert.type}
+    />
+    </>,
     document.body
   );
 };
