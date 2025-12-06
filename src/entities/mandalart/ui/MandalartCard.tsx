@@ -9,26 +9,14 @@ export type MandalartCardProps = {
   title: string;
   status: string;
   gridPreview: Array<{ id: string; label: string }>;
-  year?: number;
-  updatedAt?: string;
+  // year?: number;
+  // updatedAt?: string;
 };
 
-export const MandalartCard = ({ id, title, status, gridPreview, year, updatedAt }: MandalartCardProps) => {
+export const MandalartCard = ({ id, title, status, gridPreview }: MandalartCardProps) => {
   return (
     <article className="flex h-full flex-col justify-between border border-slate-200 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(15,23,42,0.09)]">
       <header className="space-y-3">
-        <div className="flex justify-between items-start">
-          {year && (
-            <span className="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded">
-              {year}
-            </span>
-          )}
-          {updatedAt && (
-            <span className="text-xs text-gray-400">
-              {formatRelativeTime(updatedAt)} 업데이트
-            </span>
-          )}
-        </div>
         <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
         <span className="rounded-full border border-slate-200 px-3 py-2 text-slate-600">
           {status}

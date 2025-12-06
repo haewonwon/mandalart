@@ -1,12 +1,16 @@
 'use client';
 
+import { formatRelativeTime } from '@/shared/lib/date';
+
 type WelcomeSectionProps = {
   nickname: string;
   count?: number;
   statusMessage?: string;
+  lastUpdatedAt?: string;
+  lastUpdatedYear?: number;
 };
 
-export const WelcomeSection = ({ nickname, count = 0, statusMessage }: WelcomeSectionProps) => {
+export const WelcomeSection = ({ nickname, count = 0, statusMessage, lastUpdatedAt, lastUpdatedYear }: WelcomeSectionProps) => {
   return (
     <div className="space-y-4 text-center sm:text-left">
       <p className="text-xs uppercase tracking-[0.35em] text-slate-500">dashboard</p>
@@ -28,7 +32,18 @@ export const WelcomeSection = ({ nickname, count = 0, statusMessage }: WelcomeSe
         </div>
         <div className="border border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-400">최근 업데이트</p>
-          <p className="text-lg font-semibold text-slate-900">-</p>
+          <p className="text-lg font-semibold text-slate-900">
+            {lastUpdatedAt ? (
+              <>
+                {formatRelativeTime(lastUpdatedAt)}
+                {lastUpdatedYear && 
+                  <span className="text-slate-400 text-sm ml-1">({lastUpdatedYear})</span>
+                }
+              </>
+            ) : (
+              '-'
+            )}
+          </p>
         </div>
       </div>
     </div>

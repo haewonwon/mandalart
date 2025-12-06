@@ -174,8 +174,8 @@ export const DashboardGrid = ({ mandalarts = [] }: DashboardGridProps) => {
               title={card.title}
               status={card.status}
               gridPreview={card.data}
-              year={card.year}
-              updatedAt={card.updatedAt}
+              // year={card.year}
+              // updatedAt={card.updatedAt}
             />
           ))}
         </div>

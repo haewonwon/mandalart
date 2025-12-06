@@ -37,9 +37,24 @@ export async function getDashboardData() {
     console.error('Mandalart Fetch Error:', mandalartsResult.error);
   }
 
+  // 가장 최근 업데이트된 만다라트 찾기
+  let lastUpdatedAt: string | undefined;
+  let lastUpdatedYear: number | undefined;
+  
+  if (mandalarts.length > 0) {
+    const sortedMandalarts = [...mandalarts].sort(
+      (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    );
+    const mostRecent = sortedMandalarts[0];
+    lastUpdatedAt = mostRecent.updated_at;
+    lastUpdatedYear = mostRecent.year;
+  }
+
   return {
     nickname,
     mandalarts,
+    lastUpdatedAt,
+    lastUpdatedYear,
   };
 }
 
