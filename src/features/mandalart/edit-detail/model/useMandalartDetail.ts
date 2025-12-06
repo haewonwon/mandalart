@@ -188,7 +188,7 @@ export const useMandalartDetail = (id: string | undefined) => {
   return {
     gridData: localGridData,
     updateCell,
-    saveChanges: mutate,
+    saveChanges,
     isSaving,
     isLoading: isDataLoading,
   };
