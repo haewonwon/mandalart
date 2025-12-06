@@ -33,9 +33,9 @@ export const MandalartCellItem = ({
 
   return (
     <div
-      className={`flex items-center justify-center aspect-square p-2 text-center text-sm border ${getCellStyles()}`}
+      className={`flex items-center justify-center aspect-square p-0.5 sm:p-2 text-center text-[10px] sm:text-sm border min-w-0 min-h-0 ${getCellStyles()}`}
     >
-      {label || emptyText}
+      <span className="truncate w-full px-0.5 sm:px-1 leading-tight">{label || emptyText}</span>
     </div>
   );
 };

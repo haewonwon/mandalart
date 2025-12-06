@@ -147,8 +147,8 @@ export const FullMandalartBoard = ({
   const renderGridBlock = (posKey: MandalartSubGridKey | 'center', isOverlay = false) => {
     if (posKey === 'center') {
       return (
-        <div className={`bg-slate-100 p-0.5 sm:p-1 rounded ${isOverlay ? 'shadow-xl' : ''}`}>
-          <Grid3x3 className="gap-0.5">
+        <div className={`bg-slate-100 p-0.5 sm:p-1 rounded w-full h-full min-w-0 min-h-0 ${isOverlay ? 'shadow-xl' : ''}`}>
+          <Grid3x3 className="gap-0.5 w-full h-full">
             {reorderedCenter.map((cell, idx) => (
               <MandalartCellItem
                 key={`center-${cell.id}-${idx}`}
@@ -186,11 +186,11 @@ export const FullMandalartBoard = ({
 
     return (
       <div
-        className={`bg-white border border-slate-100 p-0.5 sm:p-1 rounded ${
+        className={`bg-white border border-slate-100 p-0.5 sm:p-1 rounded w-full h-full min-w-0 min-h-0 ${
           isOverlay ? 'shadow-xl ring-2 ring-slate-900' : ''
         }`}
       >
-        <Grid3x3 className="gap-0.5">
+        <Grid3x3 className="gap-0.5 w-full h-full">
           {subCells.map((cell, idx) => {
             // 가운데 셀(4번 인덱스)이 비어있으면 center 그리드의 해당 셀 label 사용
             const displayLabel =
@@ -251,7 +251,7 @@ export const FullMandalartBoard = ({
       <SortableContext items={sortableItems} strategy={rectSortingStrategy}>
         <div 
           ref={exportRef}
-          className={`grid grid-cols-3 gap-1 sm:gap-2 ${className}`}
+          className={`grid grid-cols-3 gap-0.5 sm:gap-2 w-full h-full min-w-0 min-h-0 ${className || ''}`}
         >
           {renderItems}
         </div>

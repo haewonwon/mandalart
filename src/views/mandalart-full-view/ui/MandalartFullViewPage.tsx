@@ -4,13 +4,16 @@ import { useState, useEffect } from 'react';
 import { FullMandalartBoard } from '@/widgets/mandalart-board/ui/FullMandalartBoard';
 import { useMandalartExport } from '@/features/mandalart/export/model/useMandalartExport';
 import type { MandalartSubGridKey } from '@/entities/mandalart/model/types';
-import { ArrowLeft, Download, Share2, GripHorizontal, Check, Loader2, X, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Download, Share2, GripHorizontal, Check, Loader2, X, ChevronDown, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
 import type { MandalartGrid } from '@/entities/mandalart/model/types';
 import { useReorderMandalart } from '@/features/mandalart/edit/model/useReorderMandalart';
 import { useMandalartVersions } from '@/features/mandalart/view/model/useMandalartVersions';
 import { VERSION_TYPE_LABEL } from '@/entities/mandalart/model/types';
+import { useDeleteMandalart } from '@/features/mandalart/delete/model/useDeleteMandalart';
+import { useRouter } from 'next/navigation';
+import { generateShareToken } from '@/shared/lib/share/generateShareToken';
 
 const DEFAULT_ORDER: (MandalartSubGridKey | 'center')[] = [
   'northWest',
@@ -25,6 +28,7 @@ const DEFAULT_ORDER: (MandalartSubGridKey | 'center')[] = [
 ];
 
 export const MandalartFullViewPage = () => {
+  const router = useRouter();
   // API 데이터 연동 (모든 만다라트)
   const { data: mandalarts = [], isLoading } = useAllMandalarts();
   
@@ -43,6 +47,26 @@ export const MandalartFullViewPage = () => {
   const selectedMandalart = mandalarts
     .filter((m) => m.year === selectedYear)
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
+
+  // 삭제 기능
+  const { mutate: deleteMandalart, isPending: isDeleting } = useDeleteMandalart();
+
+  const handleDelete = () => {
+    if (!selectedMandalart) return;
+    
+    const confirmed = window.confirm(
+      `${selectedYear}년 만다라트를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`
+    );
+    
+    if (confirmed) {
+      deleteMandalart(selectedMandalart.id, {
+        onSuccess: () => {
+          alert('만다라트가 삭제되었습니다.');
+          router.push('/dashboard');
+        },
+      });
+    }
+  };
 
   // 선택된 만다라트의 모든 버전 조회
   const { data: versions = [], isLoading: isVersionsLoading } = useMandalartVersions(selectedMandalart?.id || null);
@@ -77,9 +101,17 @@ export const MandalartFullViewPage = () => {
   }, [selectedMandalart?.id]);
 
   const handleShare = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
-      alert('링크가 클립보드에 복사되었습니다.');
+    if (!selectedMandalart) return;
+    
+    // 공유 토큰 생성
+    const shareToken = generateShareToken(selectedMandalart.id);
+    
+    // 공유 링크 생성 (공개 페이지로 직접 접근)
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const shareUrl = `${baseUrl}/share/${shareToken}`;
+    
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('공유 링크가 클립보드에 복사되었습니다.');
     });
   };
 
@@ -191,11 +223,11 @@ export const MandalartFullViewPage = () => {
       <header className="sticky top-0 z-10 bg-white border-b border-slate-200 shadow-sm">
         <div className="px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link href="/dashboard" className="p-2 -ml-2 hover:bg-slate-100 rounded-full text-slate-600">
-                <ArrowLeft size={20} />
+                <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
               </Link>
-              <h1 className="font-semibold text-slate-900 text-lg">전체 만다라트 보기</h1>
+              <h1 className="font-semibold text-slate-900 text-base sm:text-lg">전체 만다라트 보기</h1>
             </div>
 
             <div className="flex items-center gap-2">
@@ -271,9 +303,9 @@ export const MandalartFullViewPage = () => {
 
                   <button
                     onClick={handleShare}
-                    className="ml-2 bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-800 transition flex items-center gap-2"
+                    className="ml-2 bg-slate-900 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium hover:bg-slate-800 transition flex items-center gap-1.5 sm:gap-2"
                   >
-                    <Share2 size={16} />
+                    <Share2 size={14} className="sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">공유</span>
                   </button>
                 </>
@@ -281,34 +313,53 @@ export const MandalartFullViewPage = () => {
             </div>
           </div>
           
-          {/* Year Filter Tabs */}
+          {/* Year Filter Tabs and Delete Button */}
           {years.length > 0 && (
-            <div className="flex items-center gap-1 -mx-1 mb-2">
-              {years.map((year) => (
+            <div className="flex items-center justify-between gap-2 sm:gap-4 mb-2">
+              <div className="flex items-center gap-0.5 sm:gap-1 -mx-1">
+                {years.map((year) => (
+                  <button
+                    key={year}
+                    onClick={() => setSelectedYear(year)}
+                    className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors ${
+                      selectedYear === year
+                        ? 'bg-slate-900 text-white'
+                        : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    {year}년
+                  </button>
+                ))}
+              </div>
+              
+              {/* 삭제 버튼 */}
+              {selectedMandalart && (
                 <button
-                  key={year}
-                  onClick={() => setSelectedYear(year)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    selectedYear === year
-                      ? 'bg-slate-900 text-white'
-                      : 'text-slate-600 hover:bg-slate-100'
-                  }`}
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={`${selectedYear}년 만다라트 삭제`}
                 >
-                  {year}년
+                  {isDeleting ? (
+                    <Loader2 className="animate-spin sm:w-4 sm:h-4" size={14} />
+                  ) : (
+                    <Trash2 className="sm:w-4 sm:h-4" size={14} />
+                  )}
+                  <span className="hidden sm:inline">삭제</span>
                 </button>
-              ))}
+              )}
             </div>
           )}
 
           {/* Version Filter Dropdown */}
           {versions.length > 0 && !isVersionsLoading && (
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-medium text-slate-600">버전:</label>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <label className="text-[10px] sm:text-xs font-medium text-slate-600">버전:</label>
               <div className="relative inline-block">
                 <select
                   value={selectedVersionId || ''}
                   onChange={(e) => setSelectedVersionId(e.target.value)}
-                  className="appearance-none rounded-md border border-slate-300 bg-white pl-3 pr-8 py-1.5 text-sm font-medium text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                  className="appearance-none rounded-md border border-slate-300 bg-white pl-2 pr-6 sm:pl-3 sm:pr-8 py-1 sm:py-1.5 text-xs sm:text-sm font-medium text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
                 >
                   {versions.map((version) => {
                     const versionTypeLabel = version.version_type ? VERSION_TYPE_LABEL[version.version_type] : '알 수 없음';
@@ -320,8 +371,8 @@ export const MandalartFullViewPage = () => {
                   })}
                 </select>
                 <ChevronDown
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
-                  size={16}
+                  className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none sm:w-4 sm:h-4"
+                  size={14}
                 />
               </div>
             </div>
@@ -330,9 +381,9 @@ export const MandalartFullViewPage = () => {
       </header>
 
       {/* Main Content Area - Scrollable */}
-      <div className="flex-1 overflow-auto p-4 sm:p-8 flex items-center justify-center min-h-0">
+      <div className="flex-1 overflow-auto p-2 sm:p-8 flex items-center justify-center min-h-0">
         <div
-          className={`bg-white p-4 sm:p-8 rounded-2xl shadow-sm border border-slate-200 aspect-square w-full max-w-4xl mx-auto transition-all duration-300 ${
+          className={`bg-white p-1.5 sm:p-8 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 aspect-square w-full max-w-4xl mx-auto transition-all duration-300 min-w-0 min-h-0 ${
             isReorderMode ? 'ring-2 ring-slate-900 shadow-lg scale-[0.98]' : ''
           }`}
         >
@@ -348,8 +399,8 @@ export const MandalartFullViewPage = () => {
 
       {/* Reorder Mode Toast/Overlay */}
       {isReorderMode && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white px-6 py-3 rounded-full shadow-lg backdrop-blur-sm z-50 animate-in fade-in slide-in-from-bottom-4">
-          <p className="text-sm font-medium">
+        <div className="fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-full shadow-lg backdrop-blur-sm z-50 animate-in fade-in slide-in-from-bottom-4">
+          <p className="text-xs sm:text-sm font-medium">
             원하는 위치로 드래그하여 순서를 변경하세요. (가운데는 고정)
           </p>
         </div>
