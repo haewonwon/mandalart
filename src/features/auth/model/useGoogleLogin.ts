@@ -9,10 +9,13 @@ export const useGoogleLogin = () => {
     const supabase = createClient();
 
     try {
+      // 프로덕션 환경에서도 동작하도록 환경 변수가 없으면 현재 origin 사용
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: process.env.NEXT_PUBLIC_BASE_URL + '/auth/callback',
+          redirectTo: `${baseUrl}/auth/callback`,
         },
       });
 
