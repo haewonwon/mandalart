@@ -41,7 +41,7 @@ export const useProfile = () => {
     staleTime: 1000 * 60 * 5, // 5분간 캐시 유지
   });
 
-  // 2. Update Profile (useMutation)
+  // 2. Update Profile (useMutation) - Optimistic Update 적용
   const { mutateAsync: updateProfile, isPending: isSaving } = useMutation({
     mutationFn: async (newNickname: string) => {
       const user = data?.user;
@@ -58,14 +58,43 @@ export const useProfile = () => {
       if (error) throw error;
       return newNickname;
     },
-    onSuccess: () => {
-      // 캐시 무효화하여 데이터를 다시 가져오게 함 (WelcomeSection 등 자동 갱신)
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      alert('프로필이 수정되었습니다.');
+    // Optimistic Update: mutation 실행 전에 UI를 먼저 업데이트
+    onMutate: async (newNickname: string) => {
+      // 진행 중인 쿼리들을 취소하여 낙관적 업데이트를 덮어쓰지 않도록 함
+      await queryClient.cancelQueries({ queryKey: ['profile'] });
+
+      // 이전 데이터 백업 (에러 시 롤백용)
+      const previousData = queryClient.getQueryData<{ user: any; profile: Profile | null }>(['profile']);
+
+      // 새로운 데이터로 캐시 업데이트 (즉시 UI 반영)
+      if (previousData && previousData.profile) {
+        queryClient.setQueryData(['profile'], {
+          ...previousData,
+          profile: {
+            ...previousData.profile,
+            nickname: newNickname,
+            updated_at: new Date().toISOString(),
+          },
+        });
+      }
+
+      // 롤백을 위한 컨텍스트 반환
+      return { previousData };
     },
-    onError: (error) => {
+    // 에러 발생 시 이전 데이터로 롤백
+    onError: (error, newNickname, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(['profile'], context.previousData);
+      }
       console.error('Failed to update profile:', error);
       alert('프로필 수정 중 오류가 발생했습니다.');
+    },
+    // 성공/실패 관계없이 서버 데이터로 동기화
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onSuccess: () => {
+      alert('프로필이 수정되었습니다.');
     },
   });
 

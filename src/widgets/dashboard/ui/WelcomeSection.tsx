@@ -1,21 +1,27 @@
 'use client';
 
 import { formatRelativeTime } from '@/shared/lib/date';
+import { useProfile } from '@/features/user/profile/model/useProfile';
 
 type WelcomeSectionProps = {
-  nickname: string;
   count?: number;
   statusMessage?: string;
   lastUpdatedAt?: string;
   lastUpdatedYear?: number;
 };
 
-export const WelcomeSection = ({ nickname, count = 0, statusMessage, lastUpdatedAt, lastUpdatedYear }: WelcomeSectionProps) => {
+export const WelcomeSection = ({ count = 0, statusMessage, lastUpdatedAt, lastUpdatedYear }: WelcomeSectionProps) => {
+  // React Query에서 프로필 가져오기 (자동 갱신)
+  const { profile, isLoading: isProfileLoading } = useProfile();
+  
+  // React Query의 데이터만 사용 (optimistic update가 즉시 반영되도록)
+  const nickname = profile?.nickname || 'Guest';
+
   return (
     <div className="space-y-4 text-center sm:text-left">
       <p className="text-xs uppercase tracking-[0.35em] text-slate-500">dashboard</p>
       <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-        어서오세요, {nickname}님.
+        어서오세요, {isProfileLoading ? '...' : nickname}님.
       </h1>
       <p className="text-base text-slate-600">
         {statusMessage ||
