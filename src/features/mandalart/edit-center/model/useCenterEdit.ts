@@ -94,10 +94,10 @@ export const useCenterEdit = () => {
       const supabase = createClient();
 
       // 새 버전 저장 (save_new_version RPC)
+      // 주의: p_version 파라미터는 제거해야 함 (DB에서 자동으로 버전 관리)
       const { error } = await supabase.rpc('save_new_version', {
         p_mandalart_id: mandalart.id,
         p_content: gridData,
-        p_version: (mandalart.current_version?.version || 0) + 1,
         p_note: '핵심 목표 수정',
       });
 
@@ -105,7 +105,10 @@ export const useCenterEdit = () => {
     },
     onSuccess: () => {
       alert('성공적으로 저장되었습니다.');
+      // 대시보드에도 반영되도록 모든 관련 쿼리 무효화
       queryClient.invalidateQueries({ queryKey: ['recentMandalart'] });
+      queryClient.invalidateQueries({ queryKey: ['allMandalarts'] });
+      queryClient.invalidateQueries({ queryKey: ['mandalartVersions'] });
     },
     onError: (error: any) => {
       console.error(error);
