@@ -31,6 +31,7 @@ export const useReorderMandalart = (selectedMandalart: Mandalart | null) => {
       // 쿼리 무효화로 데이터 새로고침
       queryClient.invalidateQueries({ queryKey: ['allMandalarts'] });
       queryClient.invalidateQueries({ queryKey: ['recentMandalart'] });
+      queryClient.invalidateQueries({ queryKey: ['mandalartVersions'] });
       // alert('저장되었습니다.'); // UX상 드래그앤드롭은 조용히 저장되는 게 좋을 수도 있음
     },
     onError: (err) => {

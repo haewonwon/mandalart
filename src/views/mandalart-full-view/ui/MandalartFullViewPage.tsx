@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { FullMandalartBoard } from '@/widgets/mandalart-board/ui/FullMandalartBoard';
 import { useMandalartExport } from '@/features/mandalart/export/model/useMandalartExport';
 import type { MandalartSubGridKey } from '@/entities/mandalart/model/types';
-import { ArrowLeft, Download, Share2, GripHorizontal, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Download, Share2, GripHorizontal, Check, Loader2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
 import type { MandalartGrid } from '@/entities/mandalart/model/types';
 import { useReorderMandalart } from '@/features/mandalart/edit/model/useReorderMandalart';
+import { useMandalartVersions } from '@/features/mandalart/view/model/useMandalartVersions';
 
 const DEFAULT_ORDER: (MandalartSubGridKey | 'center')[] = [
   'northWest',
@@ -41,7 +42,23 @@ export const MandalartFullViewPage = () => {
   const selectedMandalart = mandalarts
     .filter((m) => m.year === selectedYear)
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0];
-  const data = selectedMandalart?.current_version?.content as MandalartGrid | undefined;
+
+  // 선택된 만다라트의 모든 버전 조회
+  const { data: versions = [], isLoading: isVersionsLoading } = useMandalartVersions(selectedMandalart?.id || null);
+
+  // 버전 필터 상태
+  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
+
+  // 기본값으로 가장 최근 버전 선택
+  useEffect(() => {
+    if (versions.length > 0 && selectedVersionId === null) {
+      setSelectedVersionId(versions[0].id);
+    }
+  }, [versions, selectedVersionId]);
+
+  // 선택된 버전의 데이터 가져오기
+  const selectedVersion = versions.find((v) => v.id === selectedVersionId) || selectedMandalart?.current_version;
+  const data = selectedVersion?.content as MandalartGrid | undefined;
 
   const { exportRef, downloadImage, downloadPDF, isExporting } = useMandalartExport();
   const [isReorderMode, setIsReorderMode] = useState(false);
@@ -49,10 +66,13 @@ export const MandalartFullViewPage = () => {
 
   // 초기 배치 상태 관리
   const [orderedPositions, setOrderedPositions] = useState<(MandalartSubGridKey | 'center')[]>(DEFAULT_ORDER);
+  const [initialOrderedPositions, setInitialOrderedPositions] = useState<(MandalartSubGridKey | 'center')[]>(DEFAULT_ORDER);
 
   // 데이터가 변경될 때 orderedPositions 초기화
   useEffect(() => {
     setOrderedPositions(DEFAULT_ORDER);
+    setInitialOrderedPositions(DEFAULT_ORDER);
+    setSelectedVersionId(null); // 버전도 초기화
   }, [selectedMandalart?.id]);
 
   const handleShare = () => {
@@ -62,18 +82,38 @@ export const MandalartFullViewPage = () => {
     });
   };
 
-  const toggleReorderMode = () => {
-    if (isReorderMode) {
-      // 재배치 모드 종료 시 저장
-      saveReorder(orderedPositions, {
-        onSuccess: () => {
-          // 저장 성공 후 orderedPositions를 초기값으로 리셋
-          // (저장된 데이터는 이미 PHYSICAL_ORDER 순서로 되어 있음)
-          setOrderedPositions(DEFAULT_ORDER);
-        },
-      });
+  const handleStartReorder = () => {
+    // 재배치 모드 시작 시 현재 순서를 초기값으로 저장
+    setInitialOrderedPositions([...orderedPositions]);
+    setIsReorderMode(true);
+  };
+
+  const handleCancelReorder = () => {
+    // 취소 시 초기값으로 복원
+    setOrderedPositions([...initialOrderedPositions]);
+    setIsReorderMode(false);
+  };
+
+  const handleSaveReorder = () => {
+    // 변경사항이 있는지 확인
+    const hasChanges = JSON.stringify(orderedPositions) !== JSON.stringify(initialOrderedPositions);
+    
+    if (!hasChanges) {
+      alert('변경사항이 없습니다.');
+      setIsReorderMode(false);
+      return;
     }
-    setIsReorderMode((prev) => !prev);
+
+    // 재배치 모드 종료 시 저장
+    saveReorder(orderedPositions, {
+      onSuccess: () => {
+        // 저장 성공 후 orderedPositions를 초기값으로 리셋
+        // (저장된 데이터는 이미 PHYSICAL_ORDER 순서로 되어 있음)
+        setOrderedPositions(DEFAULT_ORDER);
+        setInitialOrderedPositions(DEFAULT_ORDER);
+        setIsReorderMode(false);
+      },
+    });
   };
 
   const handleReorderChange = (newOrder: (MandalartSubGridKey | 'center')[]) => {
@@ -157,34 +197,55 @@ export const MandalartFullViewPage = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                onClick={toggleReorderMode}
-                disabled={isSavingReorder}
-                className={`p-2 rounded-full sm:rounded-md sm:px-3 sm:py-2 flex items-center gap-2 transition ${
-                  isReorderMode
-                    ? 'bg-slate-900 text-white hover:bg-slate-800'
-                    : 'text-slate-600 hover:bg-slate-100'
-                } ${isSavingReorder ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title={isReorderMode ? '재배치 완료' : '재배치'}
-              >
-                {isSavingReorder ? (
-                  <Loader2 className="animate-spin" size={20} />
-                ) : isReorderMode ? (
-                  <Check size={20} />
-                ) : (
-                  <GripHorizontal size={20} />
-                )}
-                <span className="hidden sm:inline text-sm font-medium">
-                  {isSavingReorder ? '저장 중...' : isReorderMode ? '완료' : '재배치'}
-                </span>
-              </button>
+              {isReorderMode ? (
+                <>
+                  <button
+                    onClick={handleCancelReorder}
+                    disabled={isSavingReorder}
+                    className="p-2 rounded-full sm:rounded-md sm:px-3 sm:py-2 flex items-center gap-2 transition text-slate-600 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="취소"
+                  >
+                    <X size={20} />
+                    <span className="hidden sm:inline text-sm font-medium">취소</span>
+                  </button>
+                  <button
+                    onClick={handleSaveReorder}
+                    disabled={isSavingReorder}
+                    className="p-2 rounded-full sm:rounded-md sm:px-3 sm:py-2 flex items-center gap-2 transition bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="저장"
+                  >
+                    {isSavingReorder ? (
+                      <Loader2 className="animate-spin" size={20} />
+                    ) : (
+                      <Check size={20} />
+                    )}
+                    <span className="hidden sm:inline text-sm font-medium">
+                      {isSavingReorder ? '저장 중...' : '저장'}
+                    </span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleStartReorder}
+                    className="p-2 rounded-full sm:rounded-md sm:px-3 sm:py-2 flex items-center gap-2 transition text-slate-600 hover:bg-slate-100"
+                    title="재배치"
+                  >
+                    <GripHorizontal size={20} />
+                    <span className="hidden sm:inline text-sm font-medium">재배치</span>
+                  </button>
+                </>
+              )}
 
               {!isReorderMode && (
                 <>
                   <div className="h-4 w-px bg-slate-300 mx-1 hidden sm:block"></div>
 
                   <button
-                    onClick={() => downloadImage('mandalart-full')}
+                    onClick={() => {
+                      const fileName = `mandalart-${selectedYear || 'unknown'}-v${selectedVersion?.version || 'latest'}`;
+                      downloadImage(fileName, selectedYear);
+                    }}
                     disabled={isExporting}
                     className="p-2 text-slate-600 hover:bg-slate-100 rounded-full sm:rounded-md sm:px-3 sm:py-2 flex items-center gap-2 transition"
                     title="이미지 저장"
@@ -194,7 +255,10 @@ export const MandalartFullViewPage = () => {
                   </button>
 
                   <button
-                    onClick={() => downloadPDF('mandalart-full')}
+                    onClick={() => {
+                      const fileName = `mandalart-${selectedYear || 'unknown'}-v${selectedVersion?.version || 'latest'}`;
+                      downloadPDF(fileName);
+                    }}
                     disabled={isExporting}
                     className="p-2 text-slate-600 hover:bg-slate-100 rounded-full sm:rounded-md sm:px-3 sm:py-2 flex items-center gap-2 transition"
                     title="PDF 저장"
@@ -217,7 +281,7 @@ export const MandalartFullViewPage = () => {
           
           {/* Year Filter Tabs */}
           {years.length > 0 && (
-            <div className="flex items-center gap-1 -mx-1">
+            <div className="flex items-center gap-1 -mx-1 mb-2">
               {years.map((year) => (
                 <button
                   key={year}
@@ -233,13 +297,35 @@ export const MandalartFullViewPage = () => {
               ))}
             </div>
           )}
+
+          {/* Version Filter Tabs */}
+          {versions.length > 0 && !isVersionsLoading && (
+            <div className="flex items-center gap-1 -mx-1 flex-wrap">
+              {versions.map((version) => (
+                <button
+                  key={version.id}
+                  onClick={() => setSelectedVersionId(version.id)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    selectedVersionId === version.id
+                      ? 'bg-slate-700 text-white'
+                      : 'text-slate-500 hover:bg-slate-100'
+                  }`}
+                  title={version.note || `버전 ${version.version}`}
+                >
+                  v{version.version}
+                  {version.note && (
+                    <span className="ml-1 text-[10px] opacity-75">({version.note})</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </header>
 
       {/* Main Content Area - Scrollable */}
       <div className="flex-1 overflow-auto p-4 sm:p-8 flex items-center justify-center min-h-0">
         <div
-          ref={exportRef}
           className={`bg-white p-4 sm:p-8 rounded-2xl shadow-sm border border-slate-200 aspect-square w-full max-w-4xl mx-auto transition-all duration-300 ${
             isReorderMode ? 'ring-2 ring-slate-900 shadow-lg scale-[0.98]' : ''
           }`}
@@ -249,6 +335,7 @@ export const MandalartFullViewPage = () => {
             isReorderMode={isReorderMode}
             orderedPositions={orderedPositions}
             onReorder={handleReorderChange}
+            exportRef={exportRef}
           />
         </div>
       </div>
