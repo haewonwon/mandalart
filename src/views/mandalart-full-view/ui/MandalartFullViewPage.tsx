@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { FullMandalartBoard } from '@/widgets/mandalart-board/ui/FullMandalartBoard';
 import { useMandalartExport } from '@/features/mandalart/export/model/useMandalartExport';
 import type { MandalartSubGridKey } from '@/entities/mandalart/model/types';
-import { ArrowLeft, Download, Share2, GripHorizontal, Check, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Download, Share2, GripHorizontal, Check, Loader2, X, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
 import type { MandalartGrid } from '@/entities/mandalart/model/types';
 import { useReorderMandalart } from '@/features/mandalart/edit/model/useReorderMandalart';
 import { useMandalartVersions } from '@/features/mandalart/view/model/useMandalartVersions';
+import { VERSION_TYPE_LABEL } from '@/entities/mandalart/model/types';
 
 const DEFAULT_ORDER: (MandalartSubGridKey | 'center')[] = [
   'northWest',
@@ -120,6 +121,7 @@ export const MandalartFullViewPage = () => {
     setOrderedPositions(newOrder);
   };
 
+
   if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-slate-50">
@@ -190,7 +192,7 @@ export const MandalartFullViewPage = () => {
         <div className="px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
-              <Link href="/" className="p-2 -ml-2 hover:bg-slate-100 rounded-full text-slate-600">
+              <Link href="/dashboard" className="p-2 -ml-2 hover:bg-slate-100 rounded-full text-slate-600">
                 <ArrowLeft size={20} />
               </Link>
               <h1 className="font-semibold text-slate-900 text-lg">전체 만다라트 보기</h1>
@@ -298,26 +300,30 @@ export const MandalartFullViewPage = () => {
             </div>
           )}
 
-          {/* Version Filter Tabs */}
+          {/* Version Filter Dropdown */}
           {versions.length > 0 && !isVersionsLoading && (
-            <div className="flex items-center gap-1 -mx-1 flex-wrap">
-              {versions.map((version) => (
-                <button
-                  key={version.id}
-                  onClick={() => setSelectedVersionId(version.id)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    selectedVersionId === version.id
-                      ? 'bg-slate-700 text-white'
-                      : 'text-slate-500 hover:bg-slate-100'
-                  }`}
-                  title={version.note || `버전 ${version.version}`}
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-medium text-slate-600">버전:</label>
+              <div className="relative inline-block">
+                <select
+                  value={selectedVersionId || ''}
+                  onChange={(e) => setSelectedVersionId(e.target.value)}
+                  className="appearance-none rounded-md border border-slate-300 bg-white pl-3 pr-8 py-1.5 text-sm font-medium text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
                 >
-                  v{version.version}
-                  {version.note && (
-                    <span className="ml-1 text-[10px] opacity-75">({version.note})</span>
-                  )}
-                </button>
-              ))}
+                  {versions.map((version) => {
+                    const versionTypeLabel = version.version_type ? VERSION_TYPE_LABEL[version.version_type] : '알 수 없음';
+                    return (
+                      <option key={version.id} value={version.id}>
+                        v{version.version} - {versionTypeLabel}
+                      </option>
+                    );
+                  })}
+                </select>
+                <ChevronDown
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
+                  size={16}
+                />
+              </div>
             </div>
           )}
         </div>

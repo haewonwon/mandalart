@@ -22,6 +22,7 @@ export const useReorderMandalart = (selectedMandalart: Mandalart | null) => {
       const { error } = await supabase.rpc('save_new_version', {
         p_mandalart_id: selectedMandalart.id,
         p_content: reorderedContent, // 재배치된 JSON
+        p_version_type: 'REORDER',
         p_note: '만다라트 재배치',
       });
 

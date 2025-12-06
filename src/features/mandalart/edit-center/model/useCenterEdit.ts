@@ -10,6 +10,7 @@ import type {
   MandalartSubGridKey,
 } from '@/entities/mandalart/model/types';
 import { createEmptyGrid, createEmptyCell } from '@/shared/lib/constants';
+import { determineVersionType } from '@/shared/lib/mandalart/versionType';
 
 // 인덱스와 서브 그리드 키 매핑
 const INDEX_TO_SUBGRID_KEY: Partial<Record<number, MandalartSubGridKey>> = {
@@ -34,11 +35,14 @@ export const useCenterEdit = (selectedYear: number | null) => {
 
   // 로컬 상태 (편집용)
   const [gridData, setGridData] = useState<MandalartGrid | null>(null);
+  // 변경된 셀 추적 (버전 타입 판별용)
+  const [changedCells, setChangedCells] = useState<Array<{ gridKey: 'center'; cellIndex: number }>>([]);
 
   // 초기 데이터 로드 시 상태 동기화
   useEffect(() => {
     if (mandalart?.current_version?.content) {
       setGridData(mandalart.current_version.content as MandalartGrid);
+      setChangedCells([]); // 초기화
     }
   }, [mandalart]);
 
@@ -91,6 +95,13 @@ export const useCenterEdit = (selectedYear: number | null) => {
 
       return next;
     });
+
+    // 변경된 셀 추적
+    setChangedCells((prev) => {
+      const existing = prev.find((c) => c.cellIndex === index);
+      if (existing) return prev;
+      return [...prev, { gridKey: 'center', cellIndex: index }];
+    });
   };
 
   const { mutate: saveChanges, isPending: isSaving } = useMutation({
@@ -98,15 +109,33 @@ export const useCenterEdit = (selectedYear: number | null) => {
       if (!gridData || !mandalart) throw new Error('저장할 데이터가 없습니다.');
       const supabase = createClient();
 
+      // 변경된 셀들 중 가장 우선순위가 높은 타입 선택
+      // 우선순위: EDIT_MAIN > EDIT_SUB > EDIT_TASK
+      let versionType: 'EDIT_MAIN' | 'EDIT_SUB' | 'EDIT_TASK' = 'EDIT_SUB';
+      for (const cell of changedCells) {
+        const cellType = determineVersionType(cell.gridKey, cell.cellIndex);
+        if (cellType === 'EDIT_MAIN') {
+          versionType = 'EDIT_MAIN';
+          break; // 가장 높은 우선순위
+        }
+        if (cellType === 'EDIT_SUB') {
+          versionType = 'EDIT_SUB';
+        }
+        // EDIT_TASK는 기본값이 EDIT_SUB이므로 무시
+      }
+
       // 새 버전 저장 (save_new_version RPC)
-      // 주의: p_version 파라미터는 제거해야 함 (DB에서 자동으로 버전 관리)
       const { error } = await supabase.rpc('save_new_version', {
         p_mandalart_id: mandalart.id,
         p_content: gridData,
+        p_version_type: versionType,
         p_note: '핵심 목표 수정',
       });
 
       if (error) throw error;
+      
+      // 저장 성공 후 변경 추적 초기화
+      setChangedCells([]);
     },
     onSuccess: () => {
       alert('성공적으로 저장되었습니다.');
