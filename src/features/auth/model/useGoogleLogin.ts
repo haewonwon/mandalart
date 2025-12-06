@@ -34,7 +34,8 @@ export const useGoogleLogin = () => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('Google 로그인 실패!');
+      // 에러는 상위 컴포넌트에서 Modal로 처리
+      throw error;
     } finally {
       setIsLoading(false);
     }
