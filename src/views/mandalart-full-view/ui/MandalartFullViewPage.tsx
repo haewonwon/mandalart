@@ -14,6 +14,10 @@ import { VERSION_TYPE_LABEL } from '@/entities/mandalart/model/types';
 import { useDeleteMandalart } from '@/features/mandalart/delete/model/useDeleteMandalart';
 import { useRouter } from 'next/navigation';
 import { generateShareToken } from '@/shared/lib/share/generateShareToken';
+import { useModal } from '@/shared/hooks/useModal';
+import { AlertModal } from '@/shared/ui/AlertModal';
+import { ConfirmModal } from '@/shared/ui/ConfirmModal';
+import { formatError } from '@/shared/lib/error/formatError';
 
 const DEFAULT_ORDER: (MandalartSubGridKey | 'center')[] = [
   'northWest',
@@ -29,6 +33,7 @@ const DEFAULT_ORDER: (MandalartSubGridKey | 'center')[] = [
 
 export const MandalartFullViewPage = () => {
   const router = useRouter();
+  const modal = useModal();
   // API 데이터 연동 (모든 만다라트)
   const { data: mandalarts = [], isLoading } = useAllMandalarts();
   
@@ -54,18 +59,31 @@ export const MandalartFullViewPage = () => {
   const handleDelete = () => {
     if (!selectedMandalart) return;
     
-    const confirmed = window.confirm(
-      `${selectedYear}년 만다라트를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`
-    );
-    
-    if (confirmed) {
+    modal.confirm.show({
+      title: '만다라트 삭제',
+      message: `${selectedYear}년 만다라트를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`,
+      type: 'danger',
+      confirmText: '삭제',
+      onConfirm: () => {
       deleteMandalart(selectedMandalart.id, {
         onSuccess: () => {
-          alert('만다라트가 삭제되었습니다.');
-          router.push('/dashboard');
+          modal.alert.show({
+            type: 'success',
+            message: '만다라트가 삭제되었습니다.',
+          });
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 1000);
+        },
+        onError: (error: any) => {
+          modal.alert.show({
+            type: 'error',
+            message: formatError(error, '삭제 중 오류가 발생했습니다.'),
+          });
         },
       });
-    }
+      },
+    });
   };
 
   // 선택된 만다라트의 모든 버전 조회
@@ -85,7 +103,12 @@ export const MandalartFullViewPage = () => {
   const selectedVersion = versions.find((v) => v.id === selectedVersionId) || selectedMandalart?.current_version;
   const data = selectedVersion?.content as MandalartGrid | undefined;
 
-  const { exportRef, downloadImage, downloadPDF, isExporting } = useMandalartExport();
+  const { exportRef, downloadImage, downloadPDF, isExporting } = useMandalartExport((errorMessage) => {
+    modal.alert.show({
+      type: 'error',
+      message: errorMessage,
+    });
+  });
   const [isReorderMode, setIsReorderMode] = useState(false);
   const { mutate: saveReorder, isPending: isSavingReorder } = useReorderMandalart(selectedMandalart || null);
 
@@ -111,7 +134,10 @@ export const MandalartFullViewPage = () => {
     const shareUrl = `${baseUrl}/share/${shareToken}`;
     
     navigator.clipboard.writeText(shareUrl).then(() => {
-      alert('공유 링크가 클립보드에 복사되었습니다.');
+      modal.alert.show({
+        type: 'success',
+        message: '공유 링크가 클립보드에 복사되었습니다.',
+      });
     });
   };
 
@@ -132,7 +158,10 @@ export const MandalartFullViewPage = () => {
     const hasChanges = JSON.stringify(orderedPositions) !== JSON.stringify(initialOrderedPositions);
     
     if (!hasChanges) {
-      alert('변경사항이 없습니다.');
+      modal.alert.show({
+        type: 'info',
+        message: '변경사항이 없습니다.',
+      });
       setIsReorderMode(false);
       return;
     }
@@ -140,11 +169,19 @@ export const MandalartFullViewPage = () => {
     // 재배치 모드 종료 시 저장
     saveReorder(orderedPositions, {
       onSuccess: () => {
-        // 저장 성공 후 orderedPositions를 초기값으로 리셋
-        // (저장된 데이터는 이미 PHYSICAL_ORDER 순서로 되어 있음)
+        modal.alert.show({
+          type: 'success',
+          message: '재배치가 저장되었습니다.',
+        });
         setOrderedPositions(DEFAULT_ORDER);
         setInitialOrderedPositions(DEFAULT_ORDER);
         setIsReorderMode(false);
+      },
+      onError: (error: any) => {
+        modal.alert.show({
+          type: 'error',
+          message: formatError(error, '재배치 저장에 실패했습니다.'),
+        });
       },
     });
   };
@@ -337,7 +374,7 @@ export const MandalartFullViewPage = () => {
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-medium text-red-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title={`${selectedYear}년 만다라트 삭제`}
                 >
                   {isDeleting ? (
@@ -405,6 +442,28 @@ export const MandalartFullViewPage = () => {
           </p>
         </div>
       )}
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={modal.alert.isOpen}
+        onClose={modal.alert.hide}
+        title={modal.alert.title}
+        message={modal.alert.message}
+        type={modal.alert.type}
+      />
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={modal.confirm.isOpen}
+        onClose={modal.confirm.hide}
+        onConfirm={modal.confirm.onConfirm}
+        onCancel={modal.confirm.onCancel}
+        title={modal.confirm.title}
+        message={modal.confirm.message}
+        confirmText={modal.confirm.confirmText}
+        cancelText={modal.confirm.cancelText}
+        type={modal.confirm.type}
+      />
     </main>
   );
 };

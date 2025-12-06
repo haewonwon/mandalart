@@ -1,11 +1,18 @@
 'use client';
 
+import { useState, useRef } from 'react';
 import { Grid3x3 } from '@/shared/ui/Grid';
 import Link from 'next/link';
 import { ArrowLeft, ChevronDown, Pencil } from 'lucide-react';
 import { useCreateWizard } from '@/features/mandalart/create/model/useCreateWizard';
+import { useModal } from '@/shared/hooks/useModal';
+import { AlertModal } from '@/shared/ui/AlertModal';
+import { ConfirmModal } from '@/shared/ui/ConfirmModal';
+import { formatError } from '@/shared/lib/error/formatError';
 
 export const MandalartNewPage = () => {
+  const modal = useModal();
+  const pendingActionRef = useRef<{ type: 'edit' | 'expand' | 'reset'; seed?: string } | null>(null);
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 6 }, (_, i) => currentYear + i);
 
@@ -29,11 +36,98 @@ export const MandalartNewPage = () => {
     handleCenterInputChange,
     saveCenterGrid,
     editCenterGrid,
+    doEditCenterGrid,
     handleSubGridInputChange,
     expandGrid,
+    doExpandGrid,
     resetExpand,
+    doResetExpand,
     saveMandalart,
   } = useCreateWizard();
+
+  const handleSaveCenterGrid = () => {
+    saveCenterGrid((errorMessage) => {
+      modal.alert.show({
+        type: 'error',
+        message: errorMessage,
+      });
+    });
+  };
+
+  const handleEditCenterGrid = () => {
+    editCenterGrid(() => {
+      // 확인이 필요한 경우
+      modal.confirm.show({
+        title: '핵심 만다라트 수정',
+        message: '핵심 만다라트를 수정하시겠습니까? 확장된 내용은 초기화됩니다.',
+        type: 'warning',
+        onConfirm: () => {
+          doEditCenterGrid();
+        },
+      });
+    });
+  };
+
+  const handleExpandGrid = () => {
+    if (!selectedSeed) return;
+
+    try {
+      expandGrid(() => {
+        // 확인이 필요한 경우
+        modal.confirm.show({
+          title: '목표 변경',
+          message: '변경하시겠습니까? 저장하지 않은 내용은 사라집니다.',
+          type: 'warning',
+          onConfirm: () => {
+            try {
+              doExpandGrid();
+            } catch (error: any) {
+              modal.alert.show({
+                type: 'error',
+                message: formatError(error, '만다라트 생성 중 오류가 발생했습니다.'),
+              });
+            }
+          },
+        });
+      });
+    } catch (error: any) {
+      modal.alert.show({
+        type: 'error',
+        message: formatError(error, '만다라트 생성 중 오류가 발생했습니다.'),
+      });
+    }
+  };
+
+  const handleResetExpand = () => {
+    resetExpand(() => {
+      // 확인이 필요한 경우
+      modal.confirm.show({
+        title: '확장 내용 초기화',
+        message: '확장된 내용을 초기화하시겠습니까? 입력한 내용은 사라집니다.',
+        type: 'warning',
+        onConfirm: () => {
+          doResetExpand();
+        },
+      });
+    });
+  };
+
+  const handleSaveMandalart = () => {
+    saveMandalart(undefined, {
+      onSuccess: () => {
+        modal.alert.show({
+          type: 'success',
+          message: '저장되었습니다.',
+        });
+      },
+      onError: (error: any) => {
+        modal.alert.show({
+          type: 'error',
+          message: formatError(error, '저장 중 오류가 발생했습니다.'),
+        });
+      },
+    });
+  };
 
   return (
     <main className="flex flex-col flex-1 bg-slate-50 min-h-screen">
@@ -93,7 +187,7 @@ export const MandalartNewPage = () => {
                 </div>
               </div>
               <button
-                onClick={editCenterGrid}
+                onClick={handleEditCenterGrid}
                 className="group flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200 hover:text-slate-900"
               >
                 <Pencil size={14} className="transition group-hover:scale-110" />
@@ -128,7 +222,7 @@ export const MandalartNewPage = () => {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={saveCenterGrid}
+                  onClick={handleSaveCenterGrid}
                   className="inline-flex items-center justify-center rounded-full border border-slate-900 px-5 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-900 hover:text-white"
                 >
                   중심 만다라트 저장하기
@@ -145,8 +239,8 @@ export const MandalartNewPage = () => {
                     {generatedGrid && (
                       <button
                         type="button"
-                        onClick={resetExpand}
-                        className="text-sm font-medium text-red-600 hover:text-red-700 underline underline-offset-4"
+                        onClick={handleResetExpand}
+                        className="text-sm font-medium text-red-500 hover:text-red-600 underline underline-offset-4"
                       >
                         확장 취소
                       </button>
@@ -154,7 +248,7 @@ export const MandalartNewPage = () => {
                     {!generatedGrid && (
                       <button
                         type="button"
-                        onClick={() => saveMandalart()}
+                        onClick={handleSaveMandalart}
                         disabled={isLoading}
                         className="text-sm font-medium text-slate-600 hover:text-slate-900 underline underline-offset-4"
                       >
@@ -198,7 +292,7 @@ export const MandalartNewPage = () => {
                       <button
                         type="button"
                         disabled={!canExpand || !selectedSeed}
-                        onClick={expandGrid}
+                        onClick={handleExpandGrid}
                         className="flex-1 rounded-full border border-slate-900 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {committedSeed
@@ -210,7 +304,7 @@ export const MandalartNewPage = () => {
                         <button
                           type="button"
                           disabled={isLoading}
-                          onClick={() => saveMandalart()}
+                          onClick={handleSaveMandalart}
                           className="flex-1 rounded-full bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {isLoading ? '저장 중...' : '최종 저장하기'}
@@ -252,6 +346,28 @@ export const MandalartNewPage = () => {
           )}
         </section>
       </div>
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={modal.alert.isOpen}
+        onClose={modal.alert.hide}
+        title={modal.alert.title}
+        message={modal.alert.message}
+        type={modal.alert.type}
+      />
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={modal.confirm.isOpen}
+        onClose={modal.confirm.hide}
+        onConfirm={modal.confirm.onConfirm}
+        onCancel={modal.confirm.onCancel}
+        title={modal.confirm.title}
+        message={modal.confirm.message}
+        confirmText={modal.confirm.confirmText}
+        cancelText={modal.confirm.cancelText}
+        type={modal.confirm.type}
+      />
     </main>
   );
 };
