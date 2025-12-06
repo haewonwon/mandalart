@@ -92,6 +92,8 @@ export const DashboardGrid = ({ mandalarts = [] }: DashboardGridProps) => {
           title: subGrid[4]?.label || cell.label,
           status: '진행 중',
           data: subGrid as MandalartCenterGrid,
+          year: mandalart.year,
+          updatedAt: mandalart.updated_at,
         });
       }
       // Case B: 확장은 안 됐지만, 세부 목표(텍스트)가 있는 경우
@@ -111,6 +113,8 @@ export const DashboardGrid = ({ mandalarts = [] }: DashboardGridProps) => {
           title: cell.label,
           status: '설계 중',
           data: draftGrid,
+          year: mandalart.year,
+          updatedAt: mandalart.updated_at,
         });
       }
     }
@@ -170,6 +174,8 @@ export const DashboardGrid = ({ mandalarts = [] }: DashboardGridProps) => {
               title={card.title}
               status={card.status}
               gridPreview={card.data}
+              year={card.year}
+              updatedAt={card.updatedAt}
             />
           ))}
         </div>
