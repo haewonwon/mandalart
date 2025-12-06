@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function AuthCodeErrorPage() {
+function ErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
   const errorDescription = searchParams.get('error_description');
@@ -49,6 +50,25 @@ export default function AuthCodeErrorPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function AuthCodeErrorPage() {
+  return (
+    <Suspense fallback={
+      <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4">
+        <div className="w-full max-w-md space-y-6 rounded-lg border border-slate-200 bg-white p-8 shadow-lg">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-slate-900">인증 오류</h1>
+            <p className="mt-2 text-sm text-slate-600">
+              로그인 처리 중 문제가 발생했습니다.
+            </p>
+          </div>
+        </div>
+      </main>
+    }>
+      <ErrorContent />
+    </Suspense>
   );
 }
 
