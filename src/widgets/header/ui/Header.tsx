@@ -20,11 +20,14 @@ export const Header = () => {
     return null;
   }
 
+  // 로그인 상태에 따라 로고 링크 결정
+  const logoHref = session ? '/dashboard' : '/';
+
   return (
     <>
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex w-full max-w-screen-2xl flex-nowrap items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
-          <Link href="/" className="flex items-center gap-2 sm:gap-3">
+          <Link href={logoHref} className="flex items-center gap-2 sm:gap-3">
             <Image
               src="/mandalart_logo.svg"
               alt="08.MANDALART 로고"
