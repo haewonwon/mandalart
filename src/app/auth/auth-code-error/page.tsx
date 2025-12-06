@@ -21,9 +21,9 @@ function ErrorContent() {
 
         {error && (
           <div className="rounded-md bg-red-50 border border-red-200 p-4">
-            <p className="text-sm font-medium text-red-800">오류 코드: {error}</p>
+            <p className="text-sm font-medium text-red-700">오류 코드: {error}</p>
             {errorDescription && (
-              <p className="mt-1 text-xs text-red-600">{errorDescription}</p>
+              <p className="mt-1 text-xs text-red-500">{errorDescription}</p>
             )}
           </div>
         )}
