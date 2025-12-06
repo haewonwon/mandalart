@@ -23,6 +23,7 @@ type FullMandalartBoardProps = {
   isReorderMode?: boolean;
   orderedPositions: (MandalartSubGridKey | 'center')[];
   onReorder?: (newOrder: (MandalartSubGridKey | 'center')[]) => void;
+  exportRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 export const FullMandalartBoard = ({
@@ -31,6 +32,7 @@ export const FullMandalartBoard = ({
   isReorderMode = false,
   orderedPositions,
   onReorder,
+  exportRef,
 }: FullMandalartBoardProps) => {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -247,7 +249,12 @@ export const FullMandalartBoard = ({
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={sortableItems} strategy={rectSortingStrategy}>
-        <div className={`grid grid-cols-3 gap-1 sm:gap-2 ${className}`}>{renderItems}</div>
+        <div 
+          ref={exportRef}
+          className={`grid grid-cols-3 gap-1 sm:gap-2 ${className}`}
+        >
+          {renderItems}
+        </div>
       </SortableContext>
 
       {typeof document !== 'undefined' &&
