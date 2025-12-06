@@ -14,7 +14,7 @@ export const Header = () => {
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const isHeaderHidden = pathname?.startsWith('/mandalart/');
+  const isHeaderHidden = pathname?.startsWith('/mandalart/') || pathname?.startsWith('/share/');
 
   if (isHeaderHidden) {
     return null;

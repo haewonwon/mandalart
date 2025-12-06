@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import type { MandalartCenterGrid, MandalartCell } from '@/entities/mandalart/model/types';
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/shared/lib/supabase/client';
+import type { MandalartCenterGrid, MandalartCell, MandalartSubGridKey, MandalartGrid } from '@/entities/mandalart/model/types';
+import { createEmptyGrid } from '@/shared/lib/constants';
 
 // 빈 서브 그리드 생성 헬퍼
 const createEmptySubGrid = (idPrefix: string): MandalartCenterGrid => {
@@ -12,37 +15,181 @@ const createEmptySubGrid = (idPrefix: string): MandalartCenterGrid => {
   })) as MandalartCenterGrid;
 };
 
-export const useMandalartDetail = (mandalartId: string) => {
-  // 초기값은 빈 그리드로 설정 (추후 API 연동 시 로딩 처리 필요)
-  const [gridData, setGridData] = useState<MandalartCenterGrid>(createEmptySubGrid(mandalartId));
-  const [isSaving, setIsSaving] = useState(false);
+// id 파싱: "mandalartId-posKey" 또는 "mandalartId-posKey-draft" 형태
+const parseDetailId = (id: string | undefined): { mandalartId: string; posKey: MandalartSubGridKey | null } => {
+  if (!id) {
+    return { mandalartId: '', posKey: null };
+  }
+
+  const validPosKeys: MandalartSubGridKey[] = ['northWest', 'north', 'northEast', 'west', 'east', 'southWest', 'south', 'southEast'];
+  
+  // 마지막 부분이 유효한 posKey인지 확인
+  const parts = id.split('-');
+  const lastPart = parts[parts.length - 1];
+  const secondLastPart = parts.length > 1 ? parts[parts.length - 2] : null;
+  
+  // "draft"가 마지막에 있는 경우
+  if (lastPart === 'draft' && secondLastPart && validPosKeys.includes(secondLastPart as MandalartSubGridKey)) {
+    const posKey = secondLastPart as MandalartSubGridKey;
+    const mandalartId = parts.slice(0, -2).join('-');
+    return { mandalartId, posKey };
+  }
+  
+  // 마지막 부분이 유효한 posKey인 경우
+  if (validPosKeys.includes(lastPart as MandalartSubGridKey)) {
+    const posKey = lastPart as MandalartSubGridKey;
+    const mandalartId = parts.slice(0, -1).join('-');
+    return { mandalartId, posKey };
+  }
+  
+  // 유효한 posKey가 없는 경우 (기존 만다라트 ID만 전달된 경우)
+  return { mandalartId: id, posKey: null };
+};
+
+export const useMandalartDetail = (id: string | undefined) => {
+  const queryClient = useQueryClient();
+  const { mandalartId, posKey } = parseDetailId(id);
+  
+  // 만다라트 데이터 조회
+  const { data: mandalart, isLoading: isDataLoading } = useQuery({
+    queryKey: ['mandalart', mandalartId],
+    queryFn: async () => {
+      if (!mandalartId) throw new Error('만다라트 ID가 없습니다.');
+      
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('mandalarts')
+        .select(
+          `
+          *,
+          current_version:mandalart_versions!fk_current_version(*)
+        `
+        )
+        .eq('id', mandalartId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!mandalartId,
+  });
+
+  // 세부 목표에 해당하는 서브 그리드 데이터
+  // 대시보드와 동일한 로직: 서브 그리드가 있으면 사용, 없으면 center의 세부 목표를 중심에 배치한 draft 그리드 생성
+  const getGridData = (): MandalartCenterGrid => {
+    if (!mandalart?.current_version?.content || !posKey) {
+      return createEmptyGrid();
+    }
+
+    const content = mandalart.current_version.content as MandalartGrid;
+    const subGrid = content.subGrids?.[posKey];
+    
+    // Case A: 확장이 완료된 SubGrid가 있는 경우
+    if (subGrid) {
+      return subGrid;
+    }
+
+    // Case B: 확장은 안 됐지만, 세부 목표(텍스트)가 있는 경우
+    // posKey를 인덱스로 변환
+    const posKeyToIndex: Record<MandalartSubGridKey, number> = {
+      northWest: 0,
+      north: 1,
+      northEast: 2,
+      west: 3,
+      east: 5,
+      southWest: 6,
+      south: 7,
+      southEast: 8,
+    };
+    
+    const centerIndex = posKeyToIndex[posKey];
+    const centerCell = content.center?.[centerIndex];
+    
+    if (centerCell && centerCell.label && centerCell.label.trim() !== '') {
+      // 가짜 3x3 그리드 생성 (중심에 세부 목표 배치) - 대시보드와 동일
+      return Array(9)
+        .fill(null)
+        .map((_, idx) =>
+          idx === 4
+            ? { ...centerCell, id: `draft-center-${centerIndex}` }
+            : { id: `draft-${centerIndex}-${idx}`, label: '', completed: false }
+        ) as MandalartCenterGrid;
+    }
+
+    // 세부 목표도 없으면 빈 그리드
+    return createEmptyGrid();
+  };
+
+  // useMemo로 계산하여 불필요한 재계산 방지
+  const gridData = useMemo(() => getGridData(), [mandalart, posKey]);
+
+  // 로컬 상태 (편집용)
+  const [localGridData, setLocalGridData] = useState<MandalartCenterGrid>(gridData);
+
+  // 데이터 로드 시 상태 동기화
+  useEffect(() => {
+    if (gridData) {
+      setLocalGridData(gridData);
+    }
+  }, [gridData]);
 
   const updateCell = (index: number, newValue: string) => {
-    setGridData((prev) => {
+    setLocalGridData((prev) => {
       const next = [...prev] as MandalartCenterGrid;
       next[index] = { ...next[index], label: newValue };
       return next;
     });
   };
 
-  const saveChanges = async () => {
-    setIsSaving(true);
-    try {
-      // TODO: Supabase 저장 로직 연동
-      await new Promise((resolve) => setTimeout(resolve, 500));
+  const { mutate: saveChanges, isPending: isSaving } = useMutation({
+    mutationFn: async () => {
+      if (!mandalart) throw new Error('만다라트 데이터가 없습니다.');
+      if (!posKey) throw new Error('세부 목표 위치를 찾을 수 없습니다.');
+      const supabase = createClient();
+
+      const currentContent = mandalart.current_version?.content as MandalartGrid;
+      if (!currentContent) throw new Error('만다라트 데이터가 없습니다.');
+
+      // 서브 그리드 업데이트
+      const updatedContent: MandalartGrid = {
+        ...currentContent,
+        subGrids: {
+          ...currentContent.subGrids,
+          [posKey]: localGridData,
+        },
+      };
+
+      // 버전 타입 판별 (서브 그리드의 실천과제 수정)
+      // 서브 그리드의 실천과제는 인덱스 0-3, 5-8이므로 EDIT_TASK
+      const versionType: 'EDIT_TASK' = 'EDIT_TASK';
+
+      // 새 버전 저장
+      const { error } = await supabase.rpc('save_new_version', {
+        p_mandalart_id: mandalart.id,
+        p_content: updatedContent,
+        p_version_type: versionType,
+        p_note: '실천과제 수정',
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
       alert('성공적으로 저장되었습니다.');
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['mandalart', mandalartId] });
+      queryClient.invalidateQueries({ queryKey: ['allMandalarts'] });
+      queryClient.invalidateQueries({ queryKey: ['mandalartVersions'] });
+    },
+    onError: (error: any) => {
       console.error(error);
-      alert('저장 중 오류가 발생했습니다.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
+      alert(error.message || '저장 중 오류가 발생했습니다.');
+    },
+  });
 
   return {
-    gridData,
+    gridData: localGridData,
     updateCell,
     saveChanges,
     isSaving,
+    isLoading: isDataLoading,
   };
 };

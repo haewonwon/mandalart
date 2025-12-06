@@ -84,8 +84,14 @@ export const DashboardGrid = ({ mandalarts = [] }: DashboardGridProps) => {
 
       if (!cell) continue;
 
-      // Case A: 확장이 완료된 SubGrid가 있는 경우
-      if (subGrid) {
+      // 실천 과제 8개가 모두 작성되었는지 확인하는 함수 (인덱스 0-3, 5-8)
+      const isAllTasksCompleted = (grid: MandalartCenterGrid): boolean => {
+        const taskIndices = [0, 1, 2, 3, 5, 6, 7, 8]; // 4번(중심) 제외
+        return taskIndices.every((idx) => grid[idx]?.label && grid[idx].label.trim() !== '');
+      };
+
+      // Case A: SubGrid가 있고, 실천 과제 8개가 모두 작성된 경우
+      if (subGrid && isAllTasksCompleted(subGrid)) {
         cards.push({
           uniqueKey: `${mandalart.id}-${posKey}`,
           projectId: mandalart.id,
@@ -96,23 +102,26 @@ export const DashboardGrid = ({ mandalarts = [] }: DashboardGridProps) => {
           updatedAt: mandalart.updated_at,
         });
       }
-      // Case B: 확장은 안 됐지만, 세부 목표(텍스트)가 있는 경우
+      // Case B: SubGrid가 있지만 실천 과제가 다 안 채워졌거나, SubGrid는 없지만 세부 목표가 있는 경우
       else if (cell.label && cell.label.trim() !== '') {
-        // 가짜 3x3 그리드 생성 (중심에 세부 목표 배치)
-        const draftGrid = Array(9)
-          .fill(null)
-          .map((_, idx) =>
-            idx === 4
-              ? { ...cell, id: `draft-center-${i}` }
-              : { id: `draft-${i}-${idx}`, label: '', completed: false }
-          ) as MandalartCenterGrid;
+        // SubGrid가 있으면 그것을 사용, 없으면 draft 그리드 생성
+        const displayGrid = subGrid || (() => {
+          // 가짜 3x3 그리드 생성 (중심에 세부 목표 배치)
+          return Array(9)
+            .fill(null)
+            .map((_, idx) =>
+              idx === 4
+                ? { ...cell, id: `draft-center-${i}` }
+                : { id: `draft-${i}-${idx}`, label: '', completed: false }
+            ) as MandalartCenterGrid;
+        })();
 
         cards.push({
-          uniqueKey: `${mandalart.id}-${posKey}-draft`,
+          uniqueKey: `${mandalart.id}-${posKey}${!subGrid ? '-draft' : ''}`,
           projectId: mandalart.id,
-          title: cell.label,
+          title: displayGrid[4]?.label || cell.label,
           status: '설계 중',
-          data: draftGrid,
+          data: displayGrid,
           year: mandalart.year,
           updatedAt: mandalart.updated_at,
         });
@@ -170,7 +179,7 @@ export const DashboardGrid = ({ mandalarts = [] }: DashboardGridProps) => {
           {flattenedCards.map((card) => (
             <MandalartCard
               key={card.uniqueKey}
-              id={card.projectId}
+              id={card.uniqueKey} // mandalartId-posKey 형태로 전달
               title={card.title}
               status={card.status}
               gridPreview={card.data}

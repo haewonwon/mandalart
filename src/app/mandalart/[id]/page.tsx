@@ -1,11 +1,12 @@
 import { MandalartDetailPage } from '@/views/mandalart-detail/ui/MandalartDetailPage';
 
 type Props = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
-export default function Page({ params }: Props) {
-  return <MandalartDetailPage params={params} />;
+export default async function Page({ params }: Props) {
+  const { id } = await params;
+  return <MandalartDetailPage params={{ id }} />;
 }

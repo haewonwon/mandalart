@@ -40,7 +40,7 @@ export const MandalartNewPage = () => {
       {/* Custom Header */}
       <header className="sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 sm:px-6 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-4">
-          <Link href="/" className="p-2 -ml-2 hover:bg-slate-100 rounded-full text-slate-600">
+          <Link href="/dashboard" className="p-2 -ml-2 hover:bg-slate-100 rounded-full text-slate-600">
             <ArrowLeft size={20} />
           </Link>
           <h1 className="font-semibold text-slate-900 text-lg">새 만다라트 만들기</h1>
@@ -51,7 +51,7 @@ export const MandalartNewPage = () => {
         <section className="w-full max-w-4xl space-y-8">
           <header className="mb-6 space-y-2 text-center sm:text-left">
             <p className="text-xs uppercase tracking-[0.35em] text-slate-500">MANDALART</p>
-            <h2 className="text-3xl font-semibold text-slate-900 sm:text-4xl">새로운 우주 설계</h2>
+            <h2 className="text-3xl font-semibold text-slate-900 sm:text-4xl">새 만다라트 만들기</h2>
             <p className="text-base text-slate-600">
               중심 만다라트와 확장 목표 조건을 충족했을 때 새로운 9x9 만다라트를 생성할 수 있습니다.
             </p>
