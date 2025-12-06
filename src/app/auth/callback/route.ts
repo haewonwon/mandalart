@@ -1,19 +1,17 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  const error = searchParams.get('error');
-  const errorDescription = searchParams.get('error_description');
-  const next = searchParams.get('next') ?? '/';
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get('code');
+  const error = requestUrl.searchParams.get('error');
+  const errorDescription = requestUrl.searchParams.get('error_description');
+  const next = requestUrl.searchParams.get('next') ?? '/';
 
-  // 프로덕션 환경에서도 올바른 도메인 사용
-  // 환경 변수가 설정되어 있고 localhost가 아니면 환경 변수 사용, 아니면 요청의 origin 사용
-  const currentOrigin = process.env.NEXT_PUBLIC_BASE_URL && !process.env.NEXT_PUBLIC_BASE_URL.includes('localhost')
-    ? process.env.NEXT_PUBLIC_BASE_URL
-    : origin;
+  // 실제 요청이 온 origin을 사용 (localhost면 localhost, 프로덕션이면 프로덕션)
+  // requestUrl.origin을 우선 사용하여 로컬/프로덕션 자동 감지
+  const currentOrigin = requestUrl.origin;
 
   // OAuth provider에서 직접 에러를 반환한 경우
   if (error) {
@@ -34,22 +32,30 @@ export async function GET(request: Request) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
+          getAll() {
+            return cookieStore.getAll();
           },
-          set(name: string, value: string, options: CookieOptions) {
-            cookieStore.set({ name, value, ...options });
-          },
-          remove(name: string, options: CookieOptions) {
-            cookieStore.delete({ name, ...options });
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                cookieStore.set(name, value, options);
+              });
+            } catch (error) {
+              // The `setAll` method was called from a Server Component.
+              // This can be ignored if you have middleware refreshing
+              // user sessions.
+              console.error('Error setting cookies:', error);
+            }
           },
         },
       }
     );
 
+    // exchangeCodeForSession은 쿠키에서 자동으로 code_verifier를 읽어옵니다
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!exchangeError) {
+      // 성공 시 리디렉션
       return NextResponse.redirect(`${currentOrigin}${next}`);
     }
 

@@ -9,13 +9,23 @@ export const useGoogleLogin = () => {
     const supabase = createClient();
 
     try {
-      // 프로덕션 환경에서도 동작하도록 환경 변수가 없으면 현재 origin 사용
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+      // localhost에서는 window.location.origin을 사용 (포트 번호 포함)
+      // 프로덕션에서는 환경 변수 사용
+      let redirectUrl: string;
+      if (typeof window !== 'undefined') {
+        // 클라이언트 사이드에서는 항상 현재 origin 사용 (localhost 포함)
+        redirectUrl = `${window.location.origin}/auth/callback`;
+      } else {
+        // 서버 사이드에서는 환경 변수 사용
+        redirectUrl = process.env.NEXT_PUBLIC_BASE_URL 
+          ? `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
+          : '/auth/callback';
+      }
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${baseUrl}/auth/callback`,
+          redirectTo: redirectUrl,
         },
       });
 
