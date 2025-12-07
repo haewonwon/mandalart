@@ -21,6 +21,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_BASE_URL=your_base_url
 ```
 
+**환경별 설정:**
+- 로컬: `NEXT_PUBLIC_BASE_URL`은 설정하지 않아도 됩니다 (자동으로 `localhost:3000` 사용)
+- 개발: `NEXT_PUBLIC_BASE_URL=https://0800mandalart-git-develop-haewonwons-projects.vercel.app`
+- 운영: `NEXT_PUBLIC_BASE_URL=https://manda.gongpalmuhan.com`
+
 ## 기능
 
 - 만다라트 생성 및 편집 (핵심 목표, 세부 목표, 실천과제)
