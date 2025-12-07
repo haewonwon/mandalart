@@ -28,16 +28,16 @@ const ActionCard = ({
 }) => (
   <Link
     href={href}
-    className="group flex min-h-[200px] flex-col justify-between bg-[#F1F3F5] p-6 transition-all hover:bg-[#E9ECEF]"
+    className="group flex min-h-[160px] sm:min-h-[200px] flex-col justify-between bg-[#F1F3F5] p-4 sm:p-6 transition-all hover:bg-[#E9ECEF]"
   >
-    <div className="space-y-4">
-      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+    <div className="space-y-2 sm:space-y-4">
+      <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">
         {href === '/mandalart/new' ? 'Create' : href.includes('full') ? 'Full View' : 'Focus'}
       </span>
-      <h3 className="text-xl font-bold text-slate-900">{title}</h3>
+      <h3 className="text-lg sm:text-xl font-bold text-slate-900">{title}</h3>
     </div>
     <div className="flex items-end justify-between">
-      <p className="text-sm font-medium text-slate-500 group-hover:text-slate-700">{description}</p>
+      <p className="text-xs sm:text-sm font-medium text-slate-500 group-hover:text-slate-700">{description}</p>
     </div>
   </Link>
 );
@@ -156,12 +156,12 @@ export const DashboardGrid = ({ mandalarts = [] }: DashboardGridProps) => {
 
       {/* Year Filter Tabs */}
       {years.length > 0 && (
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-1">
+        <div className="flex items-center gap-1 sm:gap-2 border-b border-slate-200 pb-1 overflow-x-auto">
           {years.map((year) => (
             <button
               key={year}
               onClick={() => setSelectedYear(year)}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                 selectedYear === year
                   ? 'border-b-2 border-slate-900 text-slate-900'
                   : 'text-slate-500 hover:text-slate-700'
