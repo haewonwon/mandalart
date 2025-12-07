@@ -91,9 +91,9 @@ export const WelcomeSection = ({ statusMessage, lastUpdatedAt, lastUpdatedYear }
             ? '현재 진행 중인 만다라트가 없습니다.'
             : `총 ${totalInProgress}개의 만다라트가 진행 중입니다.`)}
       </p>
-      <div className="grid gap-3 text-sm text-slate-500 sm:grid-cols-2">
-        <div className="border border-slate-200 px-4 py-3">
-          <p className="text-xs text-slate-400">진행 상황</p>
+      <div className="grid gap-2 sm:gap-3 text-xs sm:text-sm text-slate-500 sm:grid-cols-2">
+        <div className="border border-slate-200 px-3 sm:px-4 py-2 sm:py-3">
+          <p className="text-[10px] sm:text-xs text-slate-400">진행 상황</p>
           {isMandalartsLoading ? (
             <p className="text-lg font-semibold text-slate-900">-</p>
           ) : totalInProgress > 0 ? (
@@ -109,20 +109,20 @@ export const WelcomeSection = ({ statusMessage, lastUpdatedAt, lastUpdatedYear }
             <p className="text-lg font-semibold text-slate-900">-</p>
           )}
         </div>
-        <div className="border border-slate-200 px-4 py-3">
-          <p className="text-xs text-slate-400">최근 업데이트</p>
-          <p className="text-lg font-semibold text-slate-900">
-            {lastUpdatedAt ? (
-              <>
-                {formatRelativeTime(lastUpdatedAt)}
-                {lastUpdatedYear && 
-                  <span className="text-slate-400 text-sm ml-1">({lastUpdatedYear})</span>
-                }
-              </>
-            ) : (
-              '-'
-            )}
-          </p>
+        <div className="border border-slate-200 px-3 sm:px-4 py-2 sm:py-3">
+          <p className="text-[10px] sm:text-xs text-slate-400">최근 업데이트</p>
+            <p className="text-base sm:text-lg font-semibold text-slate-900">
+              {lastUpdatedAt ? (
+                <>
+                  {formatRelativeTime(lastUpdatedAt)}
+                  {lastUpdatedYear && 
+                    <span className="text-slate-400 text-xs sm:text-sm ml-1">({lastUpdatedYear})</span>
+                  }
+                </>
+              ) : (
+                '-'
+              )}
+            </p>
         </div>
       </div>
     </div>

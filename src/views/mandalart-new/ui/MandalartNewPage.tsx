@@ -198,22 +198,22 @@ export const MandalartNewPage = () => {
 
           {/* 2. 중심 만다라트 입력 (Step 1) */}
           {!centerGrid ? (
-            <div className="space-y-5 rounded-lg bg-slate-100 px-6 py-5 text-sm text-slate-700">
-              <div className="flex items-center justify-between">
+            <div className="space-y-4 sm:space-y-5 rounded-lg bg-slate-100 px-4 sm:px-6 py-4 sm:py-5 text-xs sm:text-sm text-slate-700">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <p className="font-medium text-slate-900">Step 1. 중심 만다라트 만들기</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-[10px] sm:text-xs text-slate-500">
                   가운데 목표와 주변 목표 중 최소 하나를 입력해야 합니다.
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
                 {centerInputs.map((value, idx) => (
                   <input
                     key={`center-input-${idx}`}
                     value={value}
                     onChange={(event) => handleCenterInputChange(idx, event.target.value)}
                     placeholder={idx === 4 ? '중심 목표' : `주변 목표 ${idx + 1}`}
-                    className={`rounded border border-slate-300 bg-white px-2 py-2 text-sm focus:border-slate-900 focus:outline-none ${
+                    className={`rounded border border-slate-300 bg-white px-1.5 sm:px-2 py-1.5 sm:py-2 text-xs sm:text-sm focus:border-slate-900 focus:outline-none ${
                       idx === 4 ? 'font-semibold text-slate-900' : ''
                     }`}
                   />
@@ -223,7 +223,7 @@ export const MandalartNewPage = () => {
                 <button
                   type="button"
                   onClick={handleSaveCenterGrid}
-                  className="inline-flex items-center justify-center rounded-full border border-slate-900 px-5 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-900 hover:text-white"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-900 px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-900 transition hover:bg-slate-900 hover:text-white"
                 >
                   중심 만다라트 저장하기
                 </button>
@@ -231,16 +231,16 @@ export const MandalartNewPage = () => {
             </div>
           ) : (
             /* Step 2. 확장하기 */
-            <div className="space-y-6">
-              <div className="rounded-lg bg-slate-50 px-6 py-5 border border-slate-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-slate-900">Step 2. 확장하기 (선택)</h2>
-                  <div className="flex items-center gap-3">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="rounded-lg bg-slate-50 px-4 sm:px-6 py-4 sm:py-5 border border-slate-100">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4">
+                  <h2 className="text-base sm:text-lg font-semibold text-slate-900">Step 2. 확장하기 (선택)</h2>
+                  <div className="flex items-center gap-2 sm:gap-3">
                     {generatedGrid && (
                       <button
                         type="button"
                         onClick={handleResetExpand}
-                        className="text-sm font-medium text-red-500 hover:text-red-600 underline underline-offset-4"
+                        className="text-xs sm:text-sm font-medium text-red-500 hover:text-red-600 underline underline-offset-4"
                       >
                         확장 취소
                       </button>
@@ -250,7 +250,7 @@ export const MandalartNewPage = () => {
                         type="button"
                         onClick={handleSaveMandalart}
                         disabled={isLoading}
-                        className="text-sm font-medium text-slate-600 hover:text-slate-900 underline underline-offset-4"
+                        className="text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 underline underline-offset-4"
                       >
                         여기서 저장하고 끝내기
                       </button>
@@ -259,7 +259,7 @@ export const MandalartNewPage = () => {
                 </div>
 
                 {!committedSeed && (
-                  <div className="text-sm text-slate-600 space-y-2">
+                  <div className="text-xs sm:text-sm text-slate-600 space-y-1 sm:space-y-2">
                     <p>중심 만다라트가 설정되었습니다.</p>
                     {seedOptions.length === 0 ? (
                       <p className="text-amber-600">확장 가능한 주변 목표가 없습니다.</p>
@@ -270,11 +270,11 @@ export const MandalartNewPage = () => {
                 )}
 
                 {seedOptions.length > 0 && (
-                  <div className="mt-4 space-y-4">
-                    <label className="block text-sm font-medium text-slate-700">
+                  <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
+                    <label className="block text-xs sm:text-sm font-medium text-slate-700">
                       확장할 목표 선택
                       <select
-                        className="mt-2 w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
+                        className="mt-1.5 sm:mt-2 w-full rounded border border-slate-300 bg-white px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
                         value={selectedSeed}
                         onChange={(event) => setSelectedSeed(event.target.value)}
                         disabled={!canExpand}
@@ -288,12 +288,12 @@ export const MandalartNewPage = () => {
                       </select>
                     </label>
 
-                    <div className="flex flex-col gap-3 sm:flex-row">
+                    <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row">
                       <button
                         type="button"
                         disabled={!canExpand || !selectedSeed}
                         onClick={handleExpandGrid}
-                        className="flex-1 rounded-full border border-slate-900 px-4 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        className="flex-1 rounded-full border border-slate-900 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-slate-900 transition hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {committedSeed
                           ? '선택한 목표로 다시 생성하기'
@@ -305,7 +305,7 @@ export const MandalartNewPage = () => {
                           type="button"
                           disabled={isLoading}
                           onClick={handleSaveMandalart}
-                          className="flex-1 rounded-full bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="flex-1 rounded-full bg-slate-900 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {isLoading ? '저장 중...' : '최종 저장하기'}
                         </button>
@@ -313,11 +313,11 @@ export const MandalartNewPage = () => {
                     </div>
 
                     {generatedGrid && (
-                      <div className="space-y-3 rounded-lg bg-white border border-slate-200 px-6 py-5 mt-4">
-                        <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500">
+                      <div className="space-y-2 sm:space-y-3 rounded-lg bg-white border border-slate-200 px-4 sm:px-6 py-4 sm:py-5 mt-3 sm:mt-4">
+                        <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-[0.35em] text-slate-500">
                           세부 목표 설정
                         </h3>
-                        <Grid3x3 className="gap-2">
+                        <Grid3x3 className="gap-1 sm:gap-2">
                           {generatedGrid.center.map((cell, index) => (
                             <input
                               key={cell.id}
@@ -325,7 +325,7 @@ export const MandalartNewPage = () => {
                               onChange={(e) => handleSubGridInputChange(index, e.target.value)}
                               disabled={index === 4}
                               placeholder={index === 4 ? '' : `세부 목표 ${index + 1}`}
-                              className={`w-full aspect-square p-2 text-center text-sm border rounded focus:border-slate-900 focus:outline-none
+                              className={`w-full aspect-square p-1 sm:p-2 text-center text-[10px] sm:text-sm border rounded focus:border-slate-900 focus:outline-none
                                 ${
                                   index === 4
                                     ? 'bg-slate-100 font-bold text-slate-900 cursor-default'
@@ -334,7 +334,7 @@ export const MandalartNewPage = () => {
                             />
                           ))}
                         </Grid3x3>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-[10px] sm:text-xs text-slate-500">
                           * 선택한 목표가 중심으로 이동했습니다. 나머지 8칸을 자유롭게 채워보세요.
                         </p>
                       </div>
