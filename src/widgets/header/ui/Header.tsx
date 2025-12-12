@@ -7,7 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { User as UserIcon } from 'lucide-react';
+import { User as UserIcon, MessageSquare } from 'lucide-react';
 
 export const Header = () => {
   const { session, isLoading } = useAuthSession();
@@ -50,6 +50,13 @@ export const Header = () => {
                 >
                   <UserIcon size={20} />
                 </button>
+                <Link
+                  href="/feedback"
+                  className="flex h-10 w-10 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50"
+                  title="피드백 보내기"
+                >
+                  <MessageSquare size={20} />
+                </Link>
                 <LogoutButton />
               </>
             ) : pathname === '/login' ? null : (
