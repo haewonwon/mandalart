@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/shared/lib/supabase/client';
 import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
 import type {
@@ -11,6 +12,7 @@ import type {
 } from '@/entities/mandalart/model/types';
 import { createEmptyGrid, createEmptyCell } from '@/shared/lib/constants';
 import { determineVersionType } from '@/shared/lib/mandalart/versionType';
+import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
 
 // 인덱스와 서브 그리드 키 매핑
 const INDEX_TO_SUBGRID_KEY: Partial<Record<number, MandalartSubGridKey>> = {
@@ -26,6 +28,7 @@ const INDEX_TO_SUBGRID_KEY: Partial<Record<number, MandalartSubGridKey>> = {
 
 export const useCenterEdit = (selectedYear: number | null) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { data: mandalarts = [], isLoading: isDataLoading } = useAllMandalarts();
 
   // 선택된 연도의 만다라트 필터링 (가장 최근 업데이트된 것)
@@ -94,6 +97,18 @@ export const useCenterEdit = (selectedYear: number | null) => {
           versionType = 'EDIT_SUB';
         }
         // EDIT_TASK는 기본값이 EDIT_SUB이므로 무시
+      }
+
+      // 차단 상태 체크
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('로그인이 필요합니다.');
+
+      const isBanned = await checkBanStatus(supabase, user.id);
+      if (isBanned) {
+        router.push('/banned');
+        throw new Error('차단된 유저는 만다라트를 수정할 수 없습니다.');
       }
 
       // 새 버전 저장 (save_new_version RPC)

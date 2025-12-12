@@ -1,10 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/shared/lib/supabase/client';
 import { reorderMandalartGrid } from '@/shared/lib/mandalart/reorder';
 import { Mandalart, MandalartSubGridKey } from '@/entities/mandalart/model/types';
+import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
 
 export const useReorderMandalart = (selectedMandalart: Mandalart | null) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: async (newOrder: (MandalartSubGridKey | 'center')[]) => {
@@ -14,6 +17,18 @@ export const useReorderMandalart = (selectedMandalart: Mandalart | null) => {
 
       const supabase = createClient();
       const currentData = selectedMandalart.current_version.content;
+
+      // 차단 상태 체크
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('로그인이 필요합니다.');
+
+      const isBanned = await checkBanStatus(supabase, user.id);
+      if (isBanned) {
+        router.push('/banned');
+        throw new Error('차단된 유저는 만다라트를 수정할 수 없습니다.');
+      }
 
       // 1. 위에서 만든 함수로 데이터 재조립
       const reorderedContent = reorderMandalartGrid(currentData, newOrder);

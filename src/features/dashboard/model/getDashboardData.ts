@@ -1,6 +1,7 @@
 import { createClient } from '@/shared/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import type { Mandalart } from '@/entities/mandalart/model/types';
+import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
 
 export async function getDashboardData() {
   const supabase = await createClient();
@@ -15,7 +16,13 @@ export async function getDashboardData() {
     redirect('/login');
   }
 
-  // 2. 병렬로 데이터 패칭 (Promise.all)
+  // 2. 차단 상태 체크
+  const isBanned = await checkBanStatus(supabase, user.id);
+  if (isBanned) {
+    redirect('/banned');
+  }
+
+  // 3. 병렬로 데이터 패칭 (Promise.all)
   const [profileResult, mandalartsResult] = await Promise.all([
     supabase.from('profiles').select('nickname').eq('id', user.id).single(),
     supabase
