@@ -1,20 +1,28 @@
 'use client';
 
 import { useAuthSession } from '@/features/auth/model/useAuthSession';
+import { useIsAdmin } from '@/features/auth/model/useIsAdmin';
 import { LogoutButton } from '@/features/auth/ui/LogoutButton';
 import { ProfileModal } from '@/features/user/profile/ui/ProfileModal';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { User as UserIcon, MessageSquare } from 'lucide-react';
+import { User as UserIcon, MessageSquare, Shield } from 'lucide-react';
 
 export const Header = () => {
   const { session, isLoading } = useAuthSession();
+  const { isAdmin } = useIsAdmin();
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const isHeaderHidden = pathname?.startsWith('/mandalart/') || pathname?.startsWith('/share/');
+  const isHeaderHidden =
+    pathname?.startsWith('/mandalart/') ||
+    pathname?.startsWith('/share/') ||
+    pathname === '/admin' ||
+    pathname === '/banned' ||
+    pathname === '/feedback' ||
+    pathname?.startsWith('/admin/');
 
   if (isHeaderHidden) {
     return null;
@@ -50,13 +58,25 @@ export const Header = () => {
                 >
                   <UserIcon size={20} />
                 </button>
-                <Link
-                  href="/feedback"
-                  className="flex h-10 w-10 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50"
-                  title="피드백 보내기"
-                >
-                  <MessageSquare size={20} />
-                </Link>
+                {isAdmin ? (
+                  <a
+                    href="/admin"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-10 w-10 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50"
+                    title="관리자 페이지"
+                  >
+                    <Shield size={20} />
+                  </a>
+                ) : (
+                  <Link
+                    href="/feedback"
+                    className="flex h-10 w-10 items-center justify-center rounded border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-50"
+                    title="피드백 보내기"
+                  >
+                    <MessageSquare size={20} />
+                  </Link>
+                )}
                 <LogoutButton />
               </>
             ) : pathname === '/login' ? null : (

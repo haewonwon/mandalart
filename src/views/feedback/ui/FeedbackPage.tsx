@@ -1,14 +1,26 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, ImageIcon, X, Bug, Lightbulb, MessageSquare } from 'lucide-react';
+import {
+  ArrowLeft,
+  Loader2,
+  ImageIcon,
+  X,
+  Bug,
+  Lightbulb,
+  MessageSquare,
+  HelpCircle,
+  AlertCircle,
+} from 'lucide-react';
 import { createClient } from '@/shared/lib/supabase/client';
 import { useAuthSession } from '@/features/auth/model/useAuthSession';
 import { useRouter } from 'next/navigation';
 import { useModal } from '@/shared/hooks/useModal';
 import { AlertModal } from '@/shared/ui/AlertModal';
+
+type TicketCategory = 'BUG' | 'FEATURE' | 'INQUIRY' | 'APPEAL' | 'OTHER';
 
 export const FeedbackPage = () => {
   const supabase = createClient();
@@ -17,10 +29,28 @@ export const FeedbackPage = () => {
   const modal = useModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [content, setContent] = useState('');
-  const [category, setCategory] = useState<'BUG' | 'FEATURE' | 'OTHER'>('OTHER');
+  const [category, setCategory] = useState<TicketCategory>('OTHER');
+  const [isBanned, setIsBanned] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  // 차단 상태 확인
+  useEffect(() => {
+    const checkBanStatus = async () => {
+      if (!session?.user) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_banned')
+        .eq('id', session.user.id)
+        .single();
+      if (data?.is_banned === true) {
+        setIsBanned(true);
+        setCategory('INQUIRY'); // 차단된 유저는 기본값을 INQUIRY로
+      }
+    };
+    checkBanStatus();
+  }, [session, supabase]);
 
   // 파일 선택 핸들러
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,13 +117,13 @@ export const FeedbackPage = () => {
           .substring(2)}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('feedback-images')
+          .from('ticket-images')
           .upload(fileName, file);
 
         if (uploadError) throw uploadError;
 
         // 공개 URL 가져오기
-        const { data } = supabase.storage.from('feedback-images').getPublicUrl(fileName);
+        const { data } = supabase.storage.from('ticket-images').getPublicUrl(fileName);
 
         return data.publicUrl;
       });
@@ -102,7 +132,7 @@ export const FeedbackPage = () => {
       const imageUrls = await Promise.all(uploadPromises);
 
       // 2. DB 저장
-      const { error: dbError } = await supabase.from('feedbacks').insert({
+      const { error: dbError } = await supabase.from('tickets').insert({
         user_id: session.user.id,
         category,
         content,
@@ -118,13 +148,23 @@ export const FeedbackPage = () => {
 
       modal.alert.show({
         type: 'success',
-        message: '소중한 피드백 감사합니다!',
+        message: isBanned
+          ? '문의가 접수되었습니다. 검토 후 답변드리겠습니다.'
+          : '소중한 피드백 감사합니다!',
       });
 
-      // 모달이 닫힌 후 대시보드로 이동
+      // 모달이 닫힌 후 이동
       setTimeout(() => {
         modal.alert.hide();
-        router.push('/dashboard');
+        if (isBanned) {
+          // 차단된 유저는 피드백 페이지에 머물거나 로그아웃
+          setContent('');
+          setFiles([]);
+          setPreviews([]);
+          setCategory('INQUIRY');
+        } else {
+          router.push('/dashboard');
+        }
       }, 1500);
     } catch (error) {
       console.error('피드백 전송 실패:', error);
@@ -167,9 +207,40 @@ export const FeedbackPage = () => {
                 카테고리
               </label>
               <div className="flex flex-wrap gap-2">
-                {(['BUG', 'FEATURE', 'OTHER'] as const).map((cat) => {
-                  const Icon = cat === 'BUG' ? Bug : cat === 'FEATURE' ? Lightbulb : MessageSquare;
-                  const label = cat === 'BUG' ? '버그' : cat === 'FEATURE' ? '제안' : '기타';
+                {(isBanned
+                  ? (['INQUIRY', 'APPEAL'] as const)
+                  : (['BUG', 'FEATURE', 'INQUIRY', 'OTHER'] as const)
+                ).map((cat) => {
+                  const getIcon = (c: TicketCategory) => {
+                    switch (c) {
+                      case 'BUG':
+                        return Bug;
+                      case 'FEATURE':
+                        return Lightbulb;
+                      case 'INQUIRY':
+                        return HelpCircle;
+                      case 'APPEAL':
+                        return AlertCircle;
+                      default:
+                        return MessageSquare;
+                    }
+                  };
+                  const getLabel = (c: TicketCategory) => {
+                    switch (c) {
+                      case 'BUG':
+                        return '버그';
+                      case 'FEATURE':
+                        return '제안';
+                      case 'INQUIRY':
+                        return '문의';
+                      case 'APPEAL':
+                        return '소명';
+                      default:
+                        return '기타';
+                    }
+                  };
+                  const Icon = getIcon(cat);
+                  const label = getLabel(cat);
                   return (
                     <button
                       key={cat}
@@ -187,6 +258,11 @@ export const FeedbackPage = () => {
                   );
                 })}
               </div>
+              {isBanned && (
+                <p className="text-xs text-amber-600 mt-2">
+                  차단된 계정은 문의 또는 소명 카테고리만 선택할 수 있습니다.
+                </p>
+              )}
             </div>
 
             {/* 내용 입력 */}

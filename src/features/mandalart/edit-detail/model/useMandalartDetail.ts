@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/shared/lib/supabase/client';
 import type { MandalartCenterGrid, MandalartCell, MandalartSubGridKey, MandalartGrid } from '@/entities/mandalart/model/types';
 import { createEmptyGrid } from '@/shared/lib/constants';
+import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
 
 // 빈 서브 그리드 생성 헬퍼
 const createEmptySubGrid = (idPrefix: string): MandalartCenterGrid => {
@@ -48,6 +50,7 @@ const parseDetailId = (id: string | undefined): { mandalartId: string; posKey: M
 
 export const useMandalartDetail = (id: string | undefined) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { mandalartId, posKey } = parseDetailId(id);
   
   // 만다라트 데이터 조회
@@ -158,6 +161,18 @@ export const useMandalartDetail = (id: string | undefined) => {
           [posKey]: localGridData,
         },
       };
+
+      // 차단 상태 체크
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('로그인이 필요합니다.');
+
+      const isBanned = await checkBanStatus(supabase, user.id);
+      if (isBanned) {
+        router.push('/banned');
+        throw new Error('차단된 유저는 만다라트를 수정할 수 없습니다.');
+      }
 
       // 버전 타입 판별 (서브 그리드의 실천과제 수정)
       // 서브 그리드의 실천과제는 인덱스 0-3, 5-8이므로 EDIT_TASK

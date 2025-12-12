@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/shared/lib/supabase/client';
 import { MandalartCenterGrid, MandalartGrid } from '@/entities/mandalart/model/types';
 import { useNewMandalart } from './useNewMandalart';
+import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
 
 export type Step = 'SETUP' | 'CORE_GRID' | 'EXPAND_GRID';
 
@@ -87,7 +88,7 @@ export const useCreateWizard = ({
     setSelectedSeed('');
     setStep('CORE_GRID');
   };
-  
+
   const doEditCenterGrid = () => {
     setCenterGrid(null);
     setGeneratedGrid(null);
@@ -119,7 +120,7 @@ export const useCreateWizard = ({
 
     doExpandGrid();
   };
-  
+
   const doExpandGrid = () => {
     if (!selectedSeed) return;
     try {
@@ -139,7 +140,7 @@ export const useCreateWizard = ({
     }
     doResetExpand();
   };
-  
+
   const doResetExpand = () => {
     setGeneratedGrid(null);
     setCommittedSeed(null);
@@ -158,7 +159,14 @@ export const useCreateWizard = ({
       } = await supabase.auth.getUser();
       if (!user) throw new Error('로그인이 필요합니다.');
 
-      // 2. 저장할 데이터 구성 (MandalartGrid 타입)
+      // 2. 차단 상태 체크
+      const isBanned = await checkBanStatus(supabase, user.id);
+      if (isBanned) {
+        router.push('/banned');
+        throw new Error('차단된 유저는 만다라트를 생성할 수 없습니다.');
+      }
+
+      // 3. 저장할 데이터 구성 (MandalartGrid 타입)
       const payloadContent = generatedGrid
         ? {
             center: centerGrid,
@@ -172,7 +180,7 @@ export const useCreateWizard = ({
       // 제목은 별도 입력이 없으므로 '핵심 목표'를 제목으로 사용
       const title = centerGrid[4].label;
 
-      // 3. Supabase RPC 호출
+      // 4. Supabase RPC 호출
       const { data, error } = await supabase.rpc('create_mandalart', {
         p_title: title,
         p_year: year,
@@ -226,4 +234,3 @@ export const useCreateWizard = ({
     saveMandalart,
   };
 };
-
