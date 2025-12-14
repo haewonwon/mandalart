@@ -2,13 +2,13 @@
 
 import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/shared/lib/supabase/client';
 import { FullMandalartBoard } from '@/widgets/mandalart-board/ui/FullMandalartBoard';
 import type { MandalartGrid, MandalartSubGridKey } from '@/entities/mandalart/model/types';
 import { Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthSession } from '@/features/auth/model/useAuthSession';
+import { fetchMandalartForShare } from '@/shared/api/mandalart';
 
 const DEFAULT_ORDER: (MandalartSubGridKey | 'center')[] = [
   'northWest',
@@ -33,58 +33,11 @@ export const MandalartSharePage = ({ mandalartId, shareToken }: MandalartSharePa
   
   const { data: mandalart, isLoading, error } = useQuery({
     queryKey: ['sharedMandalart', mandalartId],
-    queryFn: async () => {
+    queryFn: () => {
       if (!mandalartId) {
         throw new Error('만다라트 ID가 없습니다.');
       }
-
-      const supabase = createClient();
-      
-      // 만다라트 조회 (maybeSingle 사용하여 결과가 없어도 에러 발생하지 않음)
-      const { data: mandalartData, error: mandalartError } = await supabase
-        .from('mandalarts')
-        .select(
-          `
-          *,
-          current_version:mandalart_versions!fk_current_version(*)
-        `
-        )
-        .eq('id', mandalartId)
-        .maybeSingle();
-
-      if (mandalartError) {
-        console.error('Mandalart fetch error:', mandalartError);
-        throw mandalartError;
-      }
-
-      if (!mandalartData) {
-        throw new Error('만다라트를 찾을 수 없습니다.');
-      }
-
-      // current_version이 없으면 에러
-      if (!mandalartData.current_version) {
-        throw new Error('만다라트 버전 정보를 찾을 수 없습니다.');
-      }
-
-      // 작성자 프로필 정보 조회 (maybeSingle 사용)
-      let authorNickname = '익명';
-      if (mandalartData?.user_id) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('nickname')
-          .eq('id', mandalartData.user_id)
-          .maybeSingle();
-        
-        // 프로필이 없어도 에러가 아니므로 계속 진행
-        if (!profileError && profileData) {
-          authorNickname = profileData.nickname || '익명';
-        }
-      }
-      
-      return {
-        ...mandalartData,
-        author: { nickname: authorNickname },
-      };
+      return fetchMandalartForShare(mandalartId);
     },
     enabled: !!mandalartId, // mandalartId가 있을 때만 쿼리 실행
   });
