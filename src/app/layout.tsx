@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Header } from '@/widgets/header/ui/Header';
-import { ReactQueryProvider } from '@/shared/lib/react-query/ReactQueryProvider';
-import { BanCheckProvider } from '@/shared/components/BanCheckProvider';
+import { ReactQueryProvider } from '@/app/providers/ReactQueryProvider';
+import { BanCheckProvider } from '@/app/providers/BanCheckProvider';
 
 export const metadata: Metadata = {
   title: {
