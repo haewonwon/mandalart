@@ -1,6 +1,6 @@
 'use client';
 
-import type { Profile } from '@/entities/user/model/types';
+import type { Profile } from '@/entities/user';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile as updateProfileApi } from '@/shared/api';
 

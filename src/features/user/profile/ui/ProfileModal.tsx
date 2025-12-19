@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { useProfile } from '../model/useProfile';
 import { X, User as UserIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { useModal } from '@/shared/hooks/useModal';
-import { AlertModal } from '@/shared/ui/AlertModal';
-import { formatError } from '@/shared/lib/error/formatError';
+import { useModal } from '@/shared/hooks';
+import { AlertModal } from '@/shared/ui';
+import { formatError } from '@/shared/lib';
 
 type ProfileModalProps = {
   isOpen: boolean;

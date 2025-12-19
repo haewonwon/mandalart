@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import type { MandalartGrid, MandalartSubGridKey } from '@/entities/mandalart/model/types';
+import { type MandalartGrid, type MandalartSubGridKey } from '@/entities/mandalart';
 import { exportMandalartAsImage } from './mandalartImageExport';
 import { exportMandalartAsPDF } from './mandalartPDFExport';
 

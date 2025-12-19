@@ -1,8 +1,8 @@
 'use client';
 
 import { useGoogleLogin } from '@/features/auth/model/useGoogleLogin';
-import { useModal } from '@/shared/hooks/useModal';
-import { AlertModal } from '@/shared/ui/AlertModal';
+import { useModal } from '@/shared/hooks';
+import { AlertModal } from '@/shared/ui';
 
 const GoogleIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="h-5 w-5">

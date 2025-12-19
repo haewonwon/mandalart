@@ -1,5 +1,5 @@
 import { toPng } from 'html-to-image';
-import type { MandalartGrid, MandalartSubGridKey } from '@/entities/mandalart/model/types';
+import { type MandalartGrid, type MandalartSubGridKey } from '@/entities/mandalart';
 
 export const exportMandalartAsImage = async (
   element: HTMLElement,

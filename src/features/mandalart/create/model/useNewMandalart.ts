@@ -1,12 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import type {
-  MandalartCenterGrid,
-  MandalartCell,
-  MandalartGrid,
-  MandalartSubGridKey,
-} from '@/entities/mandalart/model/types';
+import { type MandalartCenterGrid, type MandalartCell, type MandalartGrid, type MandalartSubGridKey } from '@/entities/mandalart';
 
 const CENTER_CELL_INDEX = 4;
 

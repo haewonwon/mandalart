@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { createClient } from '@/shared/lib/supabase/client';
+import { createClient } from '@/shared/lib';
 import { getSession } from '@/shared/api';
 
 /**

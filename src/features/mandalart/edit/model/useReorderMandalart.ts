@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { reorderMandalartGrid } from '@/shared/lib/mandalart/reorder';
-import { Mandalart, MandalartSubGridKey } from '@/entities/mandalart/model/types';
+import { reorderMandalartGrid } from '@/shared/lib';
+import { type Mandalart, type MandalartSubGridKey } from '@/entities/mandalart';
 import { updateMandalart } from '@/shared/api';
 
 export const useReorderMandalart = (selectedMandalart: Mandalart | null) => {
