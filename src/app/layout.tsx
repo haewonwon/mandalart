@@ -25,10 +25,21 @@ export const metadata: Metadata = {
     images: ['/mandalart_logo.svg'],
   },
 
-  // 6. 아이콘 (favicon)
   icons: {
-    icon: '/favicon.ico', // public 폴더에 아이콘 파일이 있다면
+    icon: [
+      { url: '/favicon/favicon.ico' },
+      { url: '/favicon/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+    ],
+    apple: [{ url: '/favicon/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    other: [
+      {
+        rel: 'apple-touch-icon-precomposed',
+        url: '/favicon/apple-touch-icon.png',
+      },
+    ],
   },
+  manifest: '/favicon/site.webmanifest',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
