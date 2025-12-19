@@ -23,7 +23,7 @@ export const AdminUsersSection = () => {
   }, []);
 
   const fetchUsers = async () => {
-    // 유저 리스트와 각 유저의 최근 만다라트 생성일 가져오기
+    // 1. 유저 리스트 가져오기
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select('id, nickname, email, created_at, is_banned')
@@ -36,25 +36,38 @@ export const AdminUsersSection = () => {
       return;
     }
 
-    // 각 유저의 최근 만다라트 생성일 가져오기
-    const usersWithMandalart = await Promise.all(
-      (profilesData || []).map(async (profile) => {
-        const { data: mandalartData } = await supabase
-          .from('mandalarts')
-          .select('created_at')
-          .eq('user_id', profile.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+    // 2. 해당 유저들의 최근 만다라트 생성일을 한 번에 조회 (N+1 쿼리 방지)
+    const profileIds = (profilesData || []).map((profile) => profile.id);
+    let lastCreatedMap = new Map<string, string | null>();
 
-        return {
-          ...profile,
-          last_mandalart_created_at: mandalartData?.created_at || null,
-        };
-      })
-    );
+    if (profileIds.length > 0) {
+      const { data: mandalartRows, error: mandalartError } = await supabase
+        .from('mandalarts')
+        .select('user_id, created_at')
+        .in('user_id', profileIds)
+        .order('created_at', { ascending: false });
 
-    setUsers(usersWithMandalart as User[]);
+      if (mandalartError) {
+        console.error(mandalartError);
+      } else {
+        lastCreatedMap = new Map<string, string | null>();
+        (mandalartRows || []).forEach((row) => {
+          const userId = (row as any).user_id as string;
+          const createdAt = (row as any).created_at as string;
+          // 정렬이 최신순이므로 처음 등장하는 값이 가장 최근
+          if (!lastCreatedMap.has(userId)) {
+            lastCreatedMap.set(userId, createdAt);
+          }
+        });
+      }
+    }
+
+    const usersWithMandalart: User[] = (profilesData || []).map((profile) => ({
+      ...profile,
+      last_mandalart_created_at: lastCreatedMap.get(profile.id) || null,
+    }));
+
+    setUsers(usersWithMandalart);
     setLoading(false);
   };
 
