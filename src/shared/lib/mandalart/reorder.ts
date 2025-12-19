@@ -1,8 +1,4 @@
-import {
-  MandalartGrid,
-  MandalartSubGridKey,
-  MandalartCenterGrid,
-} from '@/entities/mandalart/model/types';
+import { type MandalartGrid, type MandalartSubGridKey, type MandalartCenterGrid } from '@/entities/mandalart';
 
 // 1. 만다라트의 물리적 순서 (인덱스 0 ~ 8)
 // 이 순서는 변하지 않는 '좌석'입니다.

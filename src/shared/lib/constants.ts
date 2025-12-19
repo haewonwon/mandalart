@@ -1,9 +1,4 @@
-import {
-  MandalartCell,
-  MandalartCenterGrid,
-  MandalartGrid,
-  MandalartSubGridKey,
-} from '@/entities/mandalart/model/types';
+import { type MandalartCell, type MandalartCenterGrid, type MandalartGrid, type MandalartSubGridKey } from '@/entities/mandalart';
 import { v4 as uuidv4 } from 'uuid'; // 또는 nanoid
 
 /**

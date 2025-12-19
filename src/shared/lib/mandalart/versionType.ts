@@ -1,4 +1,4 @@
-import { MandalartVersionType, MandalartSubGridKey } from '@/entities/mandalart/model/types';
+import { type MandalartVersionType, type MandalartSubGridKey } from '@/entities/mandalart';
 
 /**
  * 수정된 칸의 위치를 기반으로 버전 타입 판별
