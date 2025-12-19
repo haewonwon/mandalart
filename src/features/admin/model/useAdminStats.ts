@@ -13,8 +13,9 @@ export const useAdminStats = () => {
   const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: ['adminStats'],
     queryFn: getAdminStats,
-    staleTime: 1000 * 60, // 1분간 캐시 유지
-    refetchInterval: 1000 * 60 * 5, // 5분마다 자동 갱신
+    // 관리자 페이지는 자주 열리지 않으므로 넉넉하게 캐시하고 자동 재조회는 사용하지 않음
+    staleTime: 1000 * 60 * 5, // 5분간 캐시 유지
+    refetchOnWindowFocus: false,
   });
 
   return {
