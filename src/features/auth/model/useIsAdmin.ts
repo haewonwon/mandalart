@@ -1,51 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createClient } from '@/shared/lib/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { getIsAdmin } from '@/shared/api';
 
+/**
+ * 현재 사용자의 관리자 여부 확인 훅
+ * @returns 관리자 여부 및 로딩 상태
+ * @description React Query를 사용하여 관리자 권한 확인
+ */
 export const useIsAdmin = () => {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const supabase = createClient();
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-
-        if (userError || !user) {
-          setIsAdmin(false);
-          setIsLoading(false);
-          return;
-        }
-
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) {
-          console.error('관리자 권한 확인 실패:', profileError);
-          setIsAdmin(false);
-          setIsLoading(false);
-          return;
-        }
-
-        setIsAdmin(profile?.is_admin === true);
-      } catch (error) {
-        console.error('관리자 권한 확인 중 오류:', error);
-        setIsAdmin(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAdmin();
-  }, []);
+  const { data: isAdmin = false, isLoading } = useQuery({
+    queryKey: ['isAdmin'],
+    queryFn: getIsAdmin,
+    staleTime: 1000 * 60 * 5, // 5분간 캐시 유지
+    retry: false, // 실패 시 재시도 안 함
+  });
 
   return { isAdmin, isLoading };
 };

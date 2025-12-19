@@ -1,72 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createClient } from '@/shared/lib/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { getAdminStats } from '@/shared/api';
+import type { AdminStats } from '@/shared/api/client/getAdminStats';
 
-interface AdminStats {
-  userCount: number;
-  mandalartCount: number;
-  todaySignups: number;
-  pendingFeedback: number;
-}
-
+/**
+ * 관리자 대시보드 통계 조회 훅
+ * @returns 관리자 통계 데이터 및 로딩 상태
+ * @description React Query를 사용하여 관리자 통계 조회
+ */
 export const useAdminStats = () => {
-  const [stats, setStats] = useState<AdminStats>({
-    userCount: 0,
-    mandalartCount: 0,
-    todaySignups: 0,
-    pendingFeedback: 0,
+  const { data: stats, isLoading } = useQuery<AdminStats>({
+    queryKey: ['adminStats'],
+    queryFn: getAdminStats,
+    staleTime: 1000 * 60, // 1분간 캐시 유지
+    refetchInterval: 1000 * 60 * 5, // 5분마다 자동 갱신
   });
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      const supabase = createClient();
-
-      try {
-        // 오늘 날짜 계산
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayISO = today.toISOString();
-
-        // 1. 총 유저 수
-        const { count: userCount } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-
-        // 2. 총 만다라트 수
-        const { count: mandalartCount } = await supabase
-          .from('mandalarts')
-          .select('*', { count: 'exact', head: true });
-
-        // 3. 오늘의 가입자 수
-        const { count: todaySignups } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', todayISO);
-
-        // 4. 미해결 티켓 수
-        const { count: pendingFeedback } = await supabase
-          .from('tickets')
-          .select('*', { count: 'exact', head: true })
-          .eq('is_resolved', false);
-
-        setStats({
-          userCount: userCount ?? 0,
-          mandalartCount: mandalartCount ?? 0,
-          todaySignups: todaySignups ?? 0,
-          pendingFeedback: pendingFeedback ?? 0,
-        });
-      } catch (error) {
-        console.error('통계 데이터 로딩 실패:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
-
-  return { stats, isLoading };
+  return {
+    stats: stats ?? {
+      userCount: 0,
+      mandalartCount: 0,
+      todaySignups: 0,
+      pendingTickets: 0,
+    },
+    isLoading,
+  };
 };
-
