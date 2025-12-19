@@ -3,10 +3,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/shared/lib/supabase/client';
 import type { MandalartCenterGrid, MandalartCell, MandalartSubGridKey, MandalartGrid } from '@/entities/mandalart/model/types';
 import { createEmptyGrid } from '@/shared/lib/constants';
-import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
+import { getMandalart, updateMandalart } from '@/shared/api';
 
 // 빈 서브 그리드 생성 헬퍼
 const createEmptySubGrid = (idPrefix: string): MandalartCenterGrid => {
@@ -56,23 +55,9 @@ export const useMandalartDetail = (id: string | undefined) => {
   // 만다라트 데이터 조회
   const { data: mandalart, isLoading: isDataLoading } = useQuery({
     queryKey: ['mandalart', mandalartId],
-    queryFn: async () => {
+    queryFn: () => {
       if (!mandalartId) throw new Error('만다라트 ID가 없습니다.');
-      
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('mandalarts')
-        .select(
-          `
-          *,
-          current_version:mandalart_versions!fk_current_version(*)
-        `
-        )
-        .eq('id', mandalartId)
-        .single();
-
-      if (error) throw error;
-      return data;
+      return getMandalart(mandalartId);
     },
     enabled: !!mandalartId,
   });
@@ -148,7 +133,6 @@ export const useMandalartDetail = (id: string | undefined) => {
     mutationFn: async () => {
       if (!mandalart) throw new Error('만다라트 데이터가 없습니다.');
       if (!posKey) throw new Error('세부 목표 위치를 찾을 수 없습니다.');
-      const supabase = createClient();
 
       const currentContent = mandalart.current_version?.content as MandalartGrid;
       if (!currentContent) throw new Error('만다라트 데이터가 없습니다.');
@@ -162,31 +146,25 @@ export const useMandalartDetail = (id: string | undefined) => {
         },
       };
 
-      // 차단 상태 체크
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error('로그인이 필요합니다.');
-
-      const isBanned = await checkBanStatus(supabase, user.id);
-      if (isBanned) {
-        router.push('/banned');
-        throw new Error('차단된 유저는 만다라트를 수정할 수 없습니다.');
-      }
-
       // 버전 타입 판별 (서브 그리드의 실천과제 수정)
       // 서브 그리드의 실천과제는 인덱스 0-3, 5-8이므로 EDIT_TASK
       const versionType: 'EDIT_TASK' = 'EDIT_TASK';
 
-      // 새 버전 저장
-      const { error } = await supabase.rpc('save_new_version', {
-        p_mandalart_id: mandalart.id,
-        p_content: updatedContent,
-        p_version_type: versionType,
-        p_note: '실천과제 수정',
-      });
-
-      if (error) throw error;
+      // API 호출 (차단 체크는 API 내부에서 처리)
+      try {
+        await updateMandalart({
+          mandalartId: mandalart.id,
+          content: updatedContent,
+          versionType,
+          note: '실천과제 수정',
+        });
+      } catch (error: any) {
+        // 차단 에러인 경우 리다이렉트
+        if (error.message?.includes('차단된 유저')) {
+          router.push('/banned');
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       // 성공 메시지는 상위 컴포넌트에서 Modal로 처리

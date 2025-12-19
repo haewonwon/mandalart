@@ -6,29 +6,40 @@ import { BanCheckProvider } from '@/shared/components/BanCheckProvider';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | 08.MANDALART',
-    default: '08.MANDALART',
+    template: '%s | MANDA',
+    default: 'MANDA',
   },
 
-  description: '공팔무한의 무한한 확장을 위한 만다라트 플래너 & 아카이브',
+  description: 'Expand your vision with MANDA.',
 
-  keywords: ['공팔무한', '만다라트', '0800', 'Mandalart'],
+  keywords: ['공팔무한', '만다라트', '0800', 'Mandalart', 'MANDA'],
 
   authors: [{ name: '0800' }],
 
   openGraph: {
-    title: '08.MANDALART',
-    description: 'Expand your vision with 0800 Mandalart.',
+    title: 'MANDA',
+    description: 'Expand your vision with MANDA.',
     type: 'website',
     locale: 'ko_KR',
-    siteName: '08.MANDALART',
+    siteName: 'MANDA',
     images: ['/mandalart_logo.svg'],
   },
 
-  // 6. 아이콘 (favicon)
   icons: {
-    icon: '/favicon.ico', // public 폴더에 아이콘 파일이 있다면
+    icon: [
+      { url: '/favicon/favicon.ico' },
+      { url: '/favicon/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+    ],
+    apple: [{ url: '/favicon/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    other: [
+      {
+        rel: 'apple-touch-icon-precomposed',
+        url: '/favicon/apple-touch-icon.png',
+      },
+    ],
   },
+  manifest: '/favicon/site.webmanifest',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

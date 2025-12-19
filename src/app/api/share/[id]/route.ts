@@ -1,18 +1,22 @@
+/**
+ * @param request - 요청 객체
+ * @param params - 파라미터 객체
+ * @returns 리다이렉트 응답
+ * @description 공유 링크를 통해 접근한 경우 쿠키 설정
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { extractMandalartIdFromToken } from '@/shared/lib/share/generateShareToken';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const awaitedParams = await params;
   const { searchParams } = new URL(request.url);
   const ref = searchParams.get('ref');
-  
+
   // 토큰에서 만다라트 ID 추출
   const mandalartId = extractMandalartIdFromToken(awaitedParams.id);
-  
+
   if (!mandalartId) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
@@ -39,4 +43,3 @@ export async function GET(
   // 쿠키 설정 후 공유 페이지로 리다이렉트 (쿼리 파라미터 제거)
   return NextResponse.redirect(new URL(`/share/${awaitedParams.id}`, request.url));
 }
-

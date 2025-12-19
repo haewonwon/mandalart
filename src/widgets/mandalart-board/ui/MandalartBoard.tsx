@@ -1,3 +1,5 @@
+'use client';
+
 import type { MandalartCenterGrid } from '@/entities/mandalart/model/types';
 import { MandalartCellItem } from '@/entities/mandalart/ui/Cell';
 import { Grid3x3 } from '@/shared/ui/Grid';

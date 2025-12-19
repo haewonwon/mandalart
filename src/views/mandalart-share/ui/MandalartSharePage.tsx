@@ -2,13 +2,13 @@
 
 import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/shared/lib/supabase/client';
 import { FullMandalartBoard } from '@/widgets/mandalart-board/ui/FullMandalartBoard';
 import type { MandalartGrid, MandalartSubGridKey } from '@/entities/mandalart/model/types';
 import { Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthSession } from '@/features/auth/model/useAuthSession';
+import { getMandalartForShare } from '@/shared/api';
 
 const DEFAULT_ORDER: (MandalartSubGridKey | 'center')[] = [
   'northWest',
@@ -30,61 +30,18 @@ type MandalartSharePageProps = {
 export const MandalartSharePage = ({ mandalartId, shareToken }: MandalartSharePageProps) => {
   const exportRef = useRef<HTMLDivElement>(null);
   const { session } = useAuthSession();
-  
-  const { data: mandalart, isLoading, error } = useQuery({
+
+  const {
+    data: mandalart,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['sharedMandalart', mandalartId],
-    queryFn: async () => {
+    queryFn: () => {
       if (!mandalartId) {
         throw new Error('만다라트 ID가 없습니다.');
       }
-
-      const supabase = createClient();
-      
-      // 만다라트 조회 (maybeSingle 사용하여 결과가 없어도 에러 발생하지 않음)
-      const { data: mandalartData, error: mandalartError } = await supabase
-        .from('mandalarts')
-        .select(
-          `
-          *,
-          current_version:mandalart_versions!fk_current_version(*)
-        `
-        )
-        .eq('id', mandalartId)
-        .maybeSingle();
-
-      if (mandalartError) {
-        console.error('Mandalart fetch error:', mandalartError);
-        throw mandalartError;
-      }
-
-      if (!mandalartData) {
-        throw new Error('만다라트를 찾을 수 없습니다.');
-      }
-
-      // current_version이 없으면 에러
-      if (!mandalartData.current_version) {
-        throw new Error('만다라트 버전 정보를 찾을 수 없습니다.');
-      }
-
-      // 작성자 프로필 정보 조회 (maybeSingle 사용)
-      let authorNickname = '익명';
-      if (mandalartData?.user_id) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('nickname')
-          .eq('id', mandalartData.user_id)
-          .maybeSingle();
-        
-        // 프로필이 없어도 에러가 아니므로 계속 진행
-        if (!profileError && profileData) {
-          authorNickname = profileData.nickname || '익명';
-        }
-      }
-      
-      return {
-        ...mandalartData,
-        author: { nickname: authorNickname },
-      };
+      return getMandalartForShare(mandalartId);
     },
     enabled: !!mandalartId, // mandalartId가 있을 때만 쿼리 실행
   });
@@ -113,19 +70,19 @@ export const MandalartSharePage = ({ mandalartId, shareToken }: MandalartSharePa
   const year = mandalart?.year || new Date().getFullYear();
 
   return (
-    <main className="flex flex-col flex-1 bg-gradient-to-b from-slate-50 to-white min-h-screen">
+    <main className="flex flex-col flex-1 bg-linear-to-b from-slate-50 to-white min-h-screen">
       {/* 상단 헤더 영역 */}
       <div className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex items-center justify-center gap-3">
             <Image
               src="/mandalart_logo.svg"
-              alt="08.MANDALART 로고"
+              alt="MANDA 로고"
               width={28}
               height={28}
               className="h-7 w-7"
             />
-            <span className="text-sm font-semibold text-slate-900">08.MANDALART</span>
+            <span className="text-sm font-semibold text-slate-900">MANDA</span>
           </div>
         </div>
       </div>
@@ -170,7 +127,8 @@ export const MandalartSharePage = ({ mandalartId, shareToken }: MandalartSharePa
                   나만의 만다라트를 만들어보세요
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-400">
-                  목표를 설정하고 실천 계획을 세워<br className="hidden sm:block" />
+                  목표를 설정하고 실천 계획을 세워
+                  <br className="hidden sm:block" />
                   꾸준히 기록하며 성장하세요
                 </p>
               </div>
@@ -196,4 +154,3 @@ export const MandalartSharePage = ({ mandalartId, shareToken }: MandalartSharePa
     </main>
   );
 };
-
