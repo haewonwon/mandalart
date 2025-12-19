@@ -1,9 +1,9 @@
-import { createClient } from '@/shared/lib/supabase/server';
+import { createServerClient } from '@/shared/lib';
 import { LandingHero } from '@/widgets/landing-hero/ui/LandingHero';
 import { redirect } from 'next/navigation';
 
 export const HomePage = async () => {
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

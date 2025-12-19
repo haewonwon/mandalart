@@ -3,9 +3,9 @@
 import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FullMandalartBoard } from '@/widgets/mandalart-board/ui/FullMandalartBoard';
-import type { MandalartGrid, MandalartSubGridKey } from '@/entities/mandalart/model/types';
 import { Sparkles } from 'lucide-react';
-import { Loading } from '@/shared/ui/Loading';
+import { Loading } from '@/shared/ui';
+import { type MandalartGrid, type MandalartSubGridKey } from '@/entities/mandalart';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthSession } from '@/features/auth/model/useAuthSession';

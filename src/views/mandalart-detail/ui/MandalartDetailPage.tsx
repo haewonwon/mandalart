@@ -1,12 +1,11 @@
 'use client';
 
 import { useMandalartDetail } from '@/features/mandalart/edit-detail/model/useMandalartDetail';
-import { Grid3x3 } from '@/shared/ui/Grid';
+import { Grid3x3, AlertModal } from '@/shared/ui';
+import { formatError } from '@/shared/lib';
+import { useModal } from '@/shared/hooks';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useModal } from '@/shared/hooks/useModal';
-import { AlertModal } from '@/shared/ui/AlertModal';
-import { formatError } from '@/shared/lib/error/formatError';
 
 type MandalartDetailPageProps = {
   params: {

@@ -3,22 +3,17 @@
 import { useState, useEffect } from 'react';
 import { FullMandalartBoard } from '@/widgets/mandalart-board/ui/FullMandalartBoard';
 import { useMandalartExport } from '@/features/mandalart/export/model/useMandalartExport';
-import type { MandalartSubGridKey } from '@/entities/mandalart/model/types';
 import { ArrowLeft, Download, Share2, GripHorizontal, Check, X, ChevronDown, Trash2 } from 'lucide-react';
-import { Loading } from '@/shared/ui/Loading';
+import { Loading, AlertModal, ConfirmModal } from '@/shared/ui';
+import { formatError, generateShareToken } from '@/shared/lib';
+import { useModal } from '@/shared/hooks';
+import { type MandalartSubGridKey, type MandalartGrid, VERSION_TYPE_LABEL } from '@/entities/mandalart';
 import Link from 'next/link';
 import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
-import type { MandalartGrid } from '@/entities/mandalart/model/types';
 import { useReorderMandalart } from '@/features/mandalart/edit/model/useReorderMandalart';
 import { useMandalartVersions } from '@/features/mandalart/view/model/useMandalartVersions';
-import { VERSION_TYPE_LABEL } from '@/entities/mandalart/model/types';
 import { useDeleteMandalart } from '@/features/mandalart/delete/model/useDeleteMandalart';
 import { useRouter } from 'next/navigation';
-import { generateShareToken } from '@/shared/lib/share/generateShareToken';
-import { useModal } from '@/shared/hooks/useModal';
-import { AlertModal } from '@/shared/ui/AlertModal';
-import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { formatError } from '@/shared/lib/error/formatError';
 
 const DEFAULT_ORDER: (MandalartSubGridKey | 'center')[] = [
   'northWest',

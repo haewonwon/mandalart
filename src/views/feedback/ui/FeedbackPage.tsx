@@ -14,11 +14,11 @@ import {
   HelpCircle,
   AlertCircle,
 } from 'lucide-react';
-import { createClient } from '@/shared/lib/supabase/client';
+import { createClient } from '@/shared/lib';
 import { useAuthSession } from '@/features/auth/model/useAuthSession';
 import { useRouter } from 'next/navigation';
-import { useModal } from '@/shared/hooks/useModal';
-import { AlertModal } from '@/shared/ui/AlertModal';
+import { useModal } from '@/shared/hooks';
+import { AlertModal } from '@/shared/ui';
 
 type TicketCategory = 'BUG' | 'FEATURE' | 'INQUIRY' | 'APPEAL' | 'OTHER';
 
