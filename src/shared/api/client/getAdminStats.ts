@@ -1,4 +1,4 @@
-import { createClient } from '@/shared/lib/supabase/client';
+import { createClient } from '@/shared/lib';
 
 export interface AdminStats {
   userCount: number;

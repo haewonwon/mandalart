@@ -1,4 +1,4 @@
-import { createClient } from '@/shared/lib/supabase/client';
+import { createClient } from '@/shared/lib';
 
 /**
  * 현재 사용자의 차단 상태 확인

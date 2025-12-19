@@ -1,4 +1,4 @@
-import { createClient } from '@/shared/lib/supabase/client';
+import { createClient } from '@/shared/lib';
 
 /**
  * 사용자 로그아웃

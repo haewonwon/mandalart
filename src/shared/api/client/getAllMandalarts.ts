@@ -1,5 +1,5 @@
-import { createClient } from '@/shared/lib/supabase/client';
-import type { Mandalart } from '@/entities/mandalart/model/types';
+import { createClient } from '@/shared/lib';
+import type { Mandalart } from '@/entities/mandalart';
 
 /**
  * @returns Promise<Mandalart[]> - 사용자의 모든 만다라트 목록. 로그인하지 않았거나 에러 발생 시 빈 배열 반환

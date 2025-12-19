@@ -1,4 +1,4 @@
-import { createClient } from '@/shared/lib/supabase/client';
+import { createClient } from '@/shared/lib';
 
 /**
  * 공유용 만다라트 조회 (인증 불필요, 작성자 프로필 포함)

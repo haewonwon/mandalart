@@ -1,5 +1,5 @@
-import { createClient } from '@/shared/lib/supabase/client';
-import type { Profile } from '@/entities/user/model/types';
+import { createClient } from '@/shared/lib';
+import type { Profile } from '@/entities/user';
 
 /**
  * 현재 사용자의 프로필 조회

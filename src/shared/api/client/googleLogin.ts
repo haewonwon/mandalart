@@ -1,5 +1,5 @@
 import { createClient } from '@/shared/lib/supabase/client';
-import { getAuthRedirectUrl } from '@/shared/lib/environment';
+import { getAuthRedirectUrl } from '@/shared/lib';
 
 /**
  * Google OAuth 로그인
