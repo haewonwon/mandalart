@@ -3,8 +3,10 @@ import type { Profile } from '@/entities/user/model/types';
 
 /**
  * 현재 사용자의 프로필 조회
+ * @returns Promise<{ user: any; profile: Profile | null }> - 사용자 및 프로필 정보. 로그인하지 않았으면 { user: null, profile: null } 반환
+ * @description 현재 로그인한 사용자의 프로필 조회. DB에 없으면 Auth 정보로 임시 프로필 구성
  */
-export const fetchProfile = async (): Promise<{ user: any; profile: Profile | null }> => {
+export const getProfile = async (): Promise<{ user: any; profile: Profile | null }> => {
   const supabase = createClient();
 
   const {
@@ -35,23 +37,5 @@ export const fetchProfile = async (): Promise<{ user: any; profile: Profile | nu
   }
 
   return { user, profile: profileData as Profile };
-};
-
-/**
- * 프로필 닉네임 업데이트
- */
-export const updateProfileNickname = async (newNickname: string, userId: string): Promise<string> => {
-  const supabase = createClient();
-
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      nickname: newNickname,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', userId);
-
-  if (error) throw error;
-  return newNickname;
 };
 
