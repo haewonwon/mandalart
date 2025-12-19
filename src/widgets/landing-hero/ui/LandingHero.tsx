@@ -8,7 +8,7 @@ export const LandingHero = () => {
     <section className="w-full py-10 sm:py-12">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 sm:px-6 md:flex-row md:items-center">
         <div className="flex-1 space-y-4 text-center md:text-left">
-          <p className="text-sm uppercase tracking-[0.35em] text-slate-500">with 08.mandalart</p>
+          <p className="text-sm uppercase tracking-[0.35em] text-slate-500">with MANDA</p>
           <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl md:text-5xl">
             당신의 가능성을 <br className="hidden md:block" />
             무한으로 확장하세요.

@@ -38,7 +38,7 @@ export const Header = () => {
           <Link href={logoHref} className="flex items-center gap-2 sm:gap-3">
             <Image
               src="/mandalart_logo.svg"
-              alt="08.MANDALART 로고"
+              alt="MANDA 로고"
               width={36}
               height={36}
               priority

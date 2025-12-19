@@ -30,8 +30,12 @@ type MandalartSharePageProps = {
 export const MandalartSharePage = ({ mandalartId, shareToken }: MandalartSharePageProps) => {
   const exportRef = useRef<HTMLDivElement>(null);
   const { session } = useAuthSession();
-  
-  const { data: mandalart, isLoading, error } = useQuery({
+
+  const {
+    data: mandalart,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['sharedMandalart', mandalartId],
     queryFn: () => {
       if (!mandalartId) {
@@ -66,19 +70,19 @@ export const MandalartSharePage = ({ mandalartId, shareToken }: MandalartSharePa
   const year = mandalart?.year || new Date().getFullYear();
 
   return (
-    <main className="flex flex-col flex-1 bg-gradient-to-b from-slate-50 to-white min-h-screen">
+    <main className="flex flex-col flex-1 bg-linear-to-b from-slate-50 to-white min-h-screen">
       {/* 상단 헤더 영역 */}
       <div className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex items-center justify-center gap-3">
             <Image
               src="/mandalart_logo.svg"
-              alt="08.MANDALART 로고"
+              alt="MANDA 로고"
               width={28}
               height={28}
               className="h-7 w-7"
             />
-            <span className="text-sm font-semibold text-slate-900">08.MANDALART</span>
+            <span className="text-sm font-semibold text-slate-900">MANDA</span>
           </div>
         </div>
       </div>
@@ -123,7 +127,8 @@ export const MandalartSharePage = ({ mandalartId, shareToken }: MandalartSharePa
                   나만의 만다라트를 만들어보세요
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-400">
-                  목표를 설정하고 실천 계획을 세워<br className="hidden sm:block" />
+                  목표를 설정하고 실천 계획을 세워
+                  <br className="hidden sm:block" />
                   꾸준히 기록하며 성장하세요
                 </p>
               </div>
@@ -149,4 +154,3 @@ export const MandalartSharePage = ({ mandalartId, shareToken }: MandalartSharePa
     </main>
   );
 };
-

@@ -1,9 +1,9 @@
-# 08.MANDALART
+# MANDA
 
 만다라트 기반 목표 관리 웹 애플리케이션
 
 <div style="background-color: white; display: inline-block; padding: 16px; border-radius: 4px;">
-  <img src="./public/mandalart_logo.svg" alt="08.MANDALART Logo" width="200" />
+  <img src="./public/mandalart_logo.svg" alt="MANDA Logo" width="200" />
 </div>
 
 ## 시작하기
@@ -22,6 +22,7 @@ NEXT_PUBLIC_BASE_URL=your_base_url
 ```
 
 **환경별 설정:**
+
 - 로컬: `NEXT_PUBLIC_BASE_URL`은 설정하지 않아도 됩니다 (자동으로 `localhost:3000` 사용)
 - 개발: `NEXT_PUBLIC_BASE_URL=https://0800mandalart-git-develop-haewonwons-projects.vercel.app`
 - 운영: `NEXT_PUBLIC_BASE_URL=https://manda.gongpalmuhan.com`
