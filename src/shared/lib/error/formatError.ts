@@ -1,7 +1,14 @@
 /**
- * 서버에서 받은 에러를 사용자 친화적인 메시지로 변환
+ * 에러를 사용자 친화적인 메시지로 변환
+ * @param error - 에러 객체 또는 문자열
+ * @param defaultMessage - 기본 에러 메시지 (기본값: '오류가 발생했습니다.')
+ * @returns 사용자 친화적인 에러 메시지
+ * @description Supabase 에러 코드 및 일반 에러를 한국어 메시지로 변환
  */
-export const formatError = (error: any, defaultMessage: string = '오류가 발생했습니다.'): string => {
+export const formatError = (
+  error: any,
+  defaultMessage: string = '오류가 발생했습니다.'
+): string => {
   // 에러가 없으면 기본 메시지 반환
   if (!error) {
     return defaultMessage;
@@ -116,4 +123,3 @@ export const formatError = (error: any, defaultMessage: string = '오류가 발�
   // 모든 경우에 해당하지 않으면 기본 메시지 반환
   return defaultMessage;
 };
-

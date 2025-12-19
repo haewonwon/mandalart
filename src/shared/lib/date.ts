@@ -1,3 +1,9 @@
+/**
+ * 상대 시간 포맷팅
+ * @param dateString - ISO 날짜 문자열
+ * @returns 포맷된 시간 문자열 ("방금 전", "3분 전", "2025.12.06" 등)
+ * @description 날짜를 현재 시간 기준 상대 시간으로 변환. 7일 이상 지난 경우 날짜 형식으로 표시
+ */
 export function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
@@ -17,4 +23,3 @@ export function formatRelativeTime(dateString: string): string {
     .format(date)
     .replace(/\.$/, ''); // 끝에 점 제거
 }
-
