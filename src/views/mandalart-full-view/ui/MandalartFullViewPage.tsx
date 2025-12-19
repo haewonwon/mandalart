@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { FullMandalartBoard } from '@/widgets/mandalart-board/ui/FullMandalartBoard';
 import { useMandalartExport } from '@/features/mandalart/export/model/useMandalartExport';
 import type { MandalartSubGridKey } from '@/entities/mandalart/model/types';
-import { ArrowLeft, Download, Share2, GripHorizontal, Check, Loader2, X, ChevronDown, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, Share2, GripHorizontal, Check, X, ChevronDown, Trash2 } from 'lucide-react';
+import { Loading } from '@/shared/ui/Loading';
 import Link from 'next/link';
 import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
 import type { MandalartGrid } from '@/entities/mandalart/model/types';
@@ -192,11 +193,7 @@ export const MandalartFullViewPage = () => {
 
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
-        <Loader2 className="animate-spin text-slate-400" size={32} />
-      </div>
-    );
+    return <Loading variant="fullscreen" size={32} />;
   }
 
   // 데이터가 없는 경우 처리
@@ -286,7 +283,7 @@ export const MandalartFullViewPage = () => {
                     title="저장"
                   >
                     {isSavingReorder ? (
-                      <Loader2 className="animate-spin" size={20} />
+                      <Loading variant="button" size={20} />
                     ) : (
                       <Check size={20} />
                     )}
@@ -378,7 +375,7 @@ export const MandalartFullViewPage = () => {
                   title={`${selectedYear}년 만다라트 삭제`}
                 >
                   {isDeleting ? (
-                    <Loader2 className="animate-spin sm:w-4 sm:h-4" size={14} />
+                    <Loading variant="button" size={14} className="sm:w-4 sm:h-4" />
                   ) : (
                     <Trash2 className="sm:w-4 sm:h-4" size={14} />
                   )}

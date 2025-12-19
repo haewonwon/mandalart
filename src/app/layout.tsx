@@ -3,6 +3,7 @@ import './globals.css';
 import { Header } from '@/widgets/header/ui/Header';
 import { ReactQueryProvider } from '@/app/providers/ReactQueryProvider';
 import { BanCheckProvider } from '@/app/providers/BanCheckProvider';
+import { GlobalLoadingProvider } from '@/app/providers/GlobalLoadingProvider';
 
 export const metadata: Metadata = {
   title: {
@@ -47,10 +48,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body className="flex min-h-screen flex-col bg-white text-slate-900 antialiased">
         <ReactQueryProvider>
-          <BanCheckProvider>
-            <Header />
-            <div className="flex flex-1 flex-col">{children}</div>
-          </BanCheckProvider>
+          <GlobalLoadingProvider>
+            <BanCheckProvider>
+              <Header />
+              <div className="flex flex-1 flex-col">{children}</div>
+            </BanCheckProvider>
+          </GlobalLoadingProvider>
         </ReactQueryProvider>
       </body>
     </html>
