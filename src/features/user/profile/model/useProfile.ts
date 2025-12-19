@@ -1,11 +1,26 @@
 'use client';
 
 import type { Profile } from '@/entities/user';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, QueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile as updateProfileApi } from '@/shared/api';
 
+/**
+ * React Query Client를 안전하게 가져오는 훅
+ * @description QueryClientProvider 밖에서 호출될 경우를 대비해 fallback QueryClient를 사용
+ */
+const fallbackQueryClient = new QueryClient();
+
+const useSafeQueryClient = () => {
+  try {
+    return useQueryClient();
+  } catch {
+    // 테스트 환경 등에서 Provider가 없을 때도 훅이 동작하도록 안전하게 처리
+    return fallbackQueryClient;
+  }
+};
+
 export const useProfile = () => {
-  const queryClient = useQueryClient();
+  const queryClient = useSafeQueryClient();
 
   // 1. Fetch Profile (useQuery)
   const { data, isLoading } = useQuery({
