@@ -1,5 +1,5 @@
 import { MandalartSharePage } from '@/views/mandalart-share/ui/MandalartSharePage';
-import { extractMandalartIdFromToken } from '@/shared/lib/share/generateShareToken';
+import { extractMandalartIdFromToken } from '@/shared/lib';
 
 type Props = {
   params: Promise<{

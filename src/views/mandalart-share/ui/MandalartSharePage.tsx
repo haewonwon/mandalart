@@ -3,8 +3,9 @@
 import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FullMandalartBoard } from '@/widgets/mandalart-board/ui/FullMandalartBoard';
-import type { MandalartGrid, MandalartSubGridKey } from '@/entities/mandalart/model/types';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { Loading } from '@/shared/ui';
+import { type MandalartGrid, type MandalartSubGridKey } from '@/entities/mandalart';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthSession } from '@/features/auth/model/useAuthSession';
@@ -49,11 +50,7 @@ export const MandalartSharePage = ({ mandalartId, shareToken }: MandalartSharePa
   const data = mandalart?.current_version?.content as MandalartGrid | undefined;
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
-        <Loader2 className="animate-spin text-slate-400" size={32} />
-      </div>
-    );
+    return <Loading variant="fullscreen" size={32} />;
   }
 
   if (error || !mandalart || !data) {

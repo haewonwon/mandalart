@@ -1,10 +1,9 @@
-import { createClient } from '@/shared/lib/supabase/server';
+import { createServerClient, checkBanStatus } from '@/shared/lib';
 import { redirect } from 'next/navigation';
-import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
 import { getMandalartsServer, getProfileNicknameServer } from '@/shared/api';
 
 export async function getDashboardData() {
-  const supabase = await createClient();
+  const supabase = await createServerClient();
 
   // 1. 로그인 세션 체크
   const {

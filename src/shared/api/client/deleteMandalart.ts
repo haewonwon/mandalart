@@ -1,4 +1,4 @@
-import { createClient } from '@/shared/lib/supabase/client';
+import { createClient } from '@/shared/lib';
 
 /**
  * @param mandalartId - 삭제할 만다라트 ID

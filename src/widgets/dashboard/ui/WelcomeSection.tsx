@@ -1,25 +1,24 @@
 'use client';
 
 import { useMemo } from 'react';
-import { formatRelativeTime } from '@/shared/lib/date';
-import { useProfile } from '@/features/user/profile/model/useProfile';
-import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
-import type { MandalartCenterGrid, MandalartSubGridKey } from '@/entities/mandalart/model/types';
+import { formatRelativeTime } from '@/shared/lib';
+import { type Mandalart, type MandalartCenterGrid, type MandalartSubGridKey } from '@/entities/mandalart';
 
 type WelcomeSectionProps = {
-  count?: number;
+  nickname: string;
+  mandalarts: Mandalart[];
   statusMessage?: string;
   lastUpdatedAt?: string;
   lastUpdatedYear?: number;
 };
 
-export const WelcomeSection = ({ statusMessage, lastUpdatedAt, lastUpdatedYear }: WelcomeSectionProps) => {
-  // React Query에서 프로필 가져오기 (자동 갱신)
-  const { profile, isLoading: isProfileLoading } = useProfile();
-  const { data: mandalarts = [], isLoading: isMandalartsLoading } = useAllMandalarts();
-  
-  // React Query의 데이터만 사용 (optimistic update가 즉시 반영되도록)
-  const nickname = profile?.nickname || 'Guest';
+export const WelcomeSection = ({
+  nickname,
+  mandalarts,
+  statusMessage,
+  lastUpdatedAt,
+  lastUpdatedYear,
+}: WelcomeSectionProps) => {
 
   // 연도별 진행 중인 만다라트 개수 계산
   const progressByYear = useMemo(() => {
@@ -83,20 +82,18 @@ export const WelcomeSection = ({ statusMessage, lastUpdatedAt, lastUpdatedYear }
     <div className="space-y-4 text-center sm:text-left">
       <p className="text-xs uppercase tracking-[0.35em] text-slate-500">dashboard</p>
       <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-        어서오세요, {isProfileLoading ? '...' : nickname}님.
+        어서오세요, {nickname}님.
       </h1>
       <p className="text-base text-slate-600">
-        {statusMessage ||
-          (totalInProgress === 0
-            ? '현재 진행 중인 만다라트가 없습니다.'
-            : `총 ${totalInProgress}개의 만다라트가 진행 중입니다.`)}
+          {statusMessage ||
+            (totalInProgress === 0
+              ? '현재 진행 중인 만다라트가 없습니다.'
+              : `총 ${totalInProgress}개의 만다라트가 진행 중입니다.`)}
       </p>
       <div className="grid gap-2 sm:gap-3 text-xs sm:text-sm text-slate-500 sm:grid-cols-2">
         <div className="border border-slate-200 px-3 sm:px-4 py-2 sm:py-3">
           <p className="text-[10px] sm:text-xs text-slate-400">진행 상황</p>
-          {isMandalartsLoading ? (
-            <p className="text-lg font-semibold text-slate-900">-</p>
-          ) : totalInProgress > 0 ? (
+          {totalInProgress > 0 ? (
             <div className="space-y-1">
               {years.map((year) => (
                 <p key={year} className="text-lg font-semibold text-slate-900">

@@ -1,5 +1,5 @@
-import { createClient } from '@/shared/lib/supabase/server';
-import type { Mandalart } from '@/entities/mandalart/model/types';
+import { createServerClient } from '@/shared/lib';
+import type { Mandalart } from '@/entities/mandalart';
 
 /**
  * 서버 사이드: 사용자의 모든 만다라트 조회
@@ -8,7 +8,7 @@ import type { Mandalart } from '@/entities/mandalart/model/types';
  * @description 서버 컴포넌트용 만다라트 조회. 연도 기준 내림차순 정렬
  */
 export const getMandalarts = async (userId: string): Promise<Mandalart[]> => {
-  const supabase = await createClient();
+  const supabase = await createServerClient();
 
   const { data, error } = await supabase
     .from('mandalarts')

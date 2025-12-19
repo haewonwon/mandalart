@@ -3,13 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useCenterEdit } from '@/features/mandalart/edit-center/model/useCenterEdit';
 import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
-import { Grid3x3 } from '@/shared/ui/Grid';
+import { Grid3x3, AlertModal, ConfirmModal } from '@/shared/ui';
+import { formatError } from '@/shared/lib';
+import { useModal } from '@/shared/hooks';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useModal } from '@/shared/hooks/useModal';
-import { AlertModal } from '@/shared/ui/AlertModal';
-import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { formatError } from '@/shared/lib/error/formatError';
 
 export const MandalartCenterViewPage = () => {
   const modal = useModal();

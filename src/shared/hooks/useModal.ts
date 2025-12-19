@@ -2,6 +2,12 @@
 
 import { useState, useCallback } from 'react';
 
+/**
+ * Alert 및 Confirm 모달 상태 관리 훅
+ * @returns alert, confirm 객체 (상태 및 show/hide 메서드 포함)
+ * @description AlertModal과 ConfirmModal을 제어하는 상태 관리 훅
+ */
+
 type AlertType = 'success' | 'error' | 'info' | 'warning';
 
 type AlertOptions = {
@@ -25,7 +31,9 @@ export const useModal = () => {
     message: '',
   });
 
-  const [confirmState, setConfirmState] = useState<{ isOpen: boolean; onConfirm?: () => void; onCancel?: () => void } & ConfirmOptions>({
+  const [confirmState, setConfirmState] = useState<
+    { isOpen: boolean; onConfirm?: () => void; onCancel?: () => void } & ConfirmOptions
+  >({
     isOpen: false,
     message: '',
   });
@@ -52,7 +60,12 @@ export const useModal = () => {
   }, []);
 
   const hideConfirm = useCallback(() => {
-    setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: undefined, onCancel: undefined }));
+    setConfirmState((prev) => ({
+      ...prev,
+      isOpen: false,
+      onConfirm: undefined,
+      onCancel: undefined,
+    }));
   }, []);
 
   const handleConfirm = useCallback(() => {
@@ -76,4 +89,3 @@ export const useModal = () => {
     },
   };
 };
-

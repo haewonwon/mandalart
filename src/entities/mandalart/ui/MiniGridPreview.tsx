@@ -1,9 +1,11 @@
 'use client';
 
-type MiniGridPreviewProps = {
-  cells: Array<{ id: string; label: string }>;
-};
+import type { MiniGridPreviewProps } from '@/entities/mandalart';
 
+/**
+ * 미니 만다라트 프리뷰 컴포넌트
+ * @description 3x3 셀 그리드로 간단한 만다라트 미리보기 표시
+ */
 export const MiniGridPreview = ({ cells }: MiniGridPreviewProps) => {
   const normalized = cells.slice(0, 9);
 

@@ -1,44 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { createClient } from '@/shared/lib/supabase/client';
+import { createClient } from '@/shared/lib';
+import { getSession } from '@/shared/api';
 
+/**
+ * 현재 사용자 세션 조회 훅
+ * @returns 세션 정보 및 로딩 상태
+ * @description React Query를 사용하여 세션 조회 및 인증 상태 변경 감지
+ */
 export const useAuthSession = () => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    data: session,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['session'],
+    queryFn: getSession,
+    staleTime: 0, // 항상 최신 상태 유지
+    refetchOnWindowFocus: true,
+  });
 
+  // 인증 상태 변경 감지
   useEffect(() => {
     const supabase = createClient();
-
-    const fetchSession = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        setSession(data.session);
-      } catch (error) {
-        console.error('세션 조회 실패:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSession();
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-      setIsLoading(false);
+    } = supabase.auth.onAuthStateChange(() => {
+      // 인증 상태가 변경되면 쿼리 재실행
+      refetch();
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [refetch]);
 
   return {
-    session,
+    session: session ?? null,
     isLoading,
   };
 };

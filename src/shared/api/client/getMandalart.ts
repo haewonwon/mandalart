@@ -1,5 +1,5 @@
-import { createClient } from '@/shared/lib/supabase/client';
-import type { Mandalart } from '@/entities/mandalart/model/types';
+import { createClient } from '@/shared/lib';
+import type { Mandalart } from '@/entities/mandalart';
 
 /**
  * 특정 만다라트 조회 (ID로)

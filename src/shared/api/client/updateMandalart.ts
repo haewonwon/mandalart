@@ -1,6 +1,5 @@
-import { createClient } from '@/shared/lib/supabase/client';
-import type { MandalartGrid, MandalartVersionType } from '@/entities/mandalart/model/types';
-import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
+import { createClient, checkBanStatus } from '@/shared/lib';
+import type { MandalartGrid, MandalartVersionType } from '@/entities/mandalart';
 
 /**
  * 만다라트 버전 저장 (수정, 재배치 등)
@@ -41,4 +40,3 @@ export const updateMandalart = async (params: {
 
   if (error) throw error;
 };
-

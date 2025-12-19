@@ -26,6 +26,18 @@ export { getProfile } from './client/getProfile';
 
 export { updateProfile } from './client/updateProfile';
 
+export { getSession } from './client/getSession';
+
+export { getIsAdmin } from './client/getIsAdmin';
+
+export { getBanStatus } from './client/getBanStatus';
+
+export { logout } from './client/logout';
+
+export { googleLogin } from './client/googleLogin';
+
+export { getAdminStats, type AdminStats } from './client/getAdminStats';
+
 // Server APIs
 export { getMandalarts as getMandalartsServer } from './server/getMandalarts.server';
 

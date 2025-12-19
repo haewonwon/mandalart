@@ -1,12 +1,16 @@
-type CellType = 'center-main' | 'center-other' | 'subgrid-center' | 'subgrid-other';
+import type { CellType } from '@/entities/mandalart';
 
-export const MandalartCellItem = ({ 
-  label, 
+/**
+ * 만다라트 셀 컴포넌트
+ * @description 3x3 그리드 내 단일 셀 표시
+ */
+export const MandalartCellItem = ({
+  label,
   isCenter,
   emptyText = '비어있음',
-  cellType
-}: { 
-  label: string; 
+  cellType,
+}: {
+  label: string;
   isCenter?: boolean;
   emptyText?: string;
   cellType?: CellType;

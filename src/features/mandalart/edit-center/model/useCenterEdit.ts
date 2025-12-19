@@ -4,13 +4,8 @@ import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
-import type {
-  MandalartCenterGrid,
-  MandalartGrid,
-  MandalartSubGridKey,
-} from '@/entities/mandalart/model/types';
-import { createEmptyGrid, createEmptyCell } from '@/shared/lib/constants';
-import { determineVersionType } from '@/shared/lib/mandalart/versionType';
+import { type MandalartCenterGrid, type MandalartGrid, type MandalartSubGridKey } from '@/entities/mandalart';
+import { createEmptyGrid, createEmptyCell, determineVersionType } from '@/shared/lib';
 import { updateMandalart } from '@/shared/api';
 
 // 인덱스와 서브 그리드 키 매핑

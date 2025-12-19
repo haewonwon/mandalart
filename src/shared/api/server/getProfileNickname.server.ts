@@ -1,4 +1,4 @@
-import { createClient } from '@/shared/lib/supabase/server';
+import { createServerClient } from '@/shared/lib';
 
 /**
  * 서버 사이드: 프로필 닉네임 조회
@@ -7,7 +7,7 @@ import { createClient } from '@/shared/lib/supabase/server';
  * @description 서버 컴포넌트용 프로필 닉네임 조회
  */
 export const getProfileNickname = async (userId: string): Promise<string | null> => {
-  const supabase = await createClient();
+  const supabase = await createServerClient();
 
   const { data, error } = await supabase
     .from('profiles')

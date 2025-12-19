@@ -13,9 +13,9 @@ import {
   HelpCircle,
   AlertCircle,
 } from 'lucide-react';
-import { createClient } from '@/shared/lib/supabase/client';
-import { useModal } from '@/shared/hooks/useModal';
-import { AlertModal } from '@/shared/ui/AlertModal';
+import { createClient } from '@/shared/lib';
+import { useModal } from '@/shared/hooks';
+import { AlertModal } from '@/shared/ui';
 
 interface Ticket {
   id: string;

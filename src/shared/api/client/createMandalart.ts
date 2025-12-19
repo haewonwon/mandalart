@@ -1,6 +1,5 @@
-import { createClient } from '@/shared/lib/supabase/client';
-import type { MandalartGrid } from '@/entities/mandalart/model/types';
-import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
+import { createClient, checkBanStatus } from '@/shared/lib';
+import type { MandalartGrid } from '@/entities/mandalart';
 
 /**
  * @param params.title - 만다라트 제목

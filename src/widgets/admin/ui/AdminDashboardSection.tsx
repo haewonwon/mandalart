@@ -1,6 +1,7 @@
 'use client';
 
-import { Users, FileText, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
+import { Users, FileText, UserPlus, AlertCircle } from 'lucide-react';
+import { Loading } from '@/shared/ui';
 import { useAdminStats } from '@/features/admin/model/useAdminStats';
 
 export const AdminDashboardSection = () => {
@@ -9,7 +10,7 @@ export const AdminDashboardSection = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="animate-spin text-slate-400" size={32} />
+        <Loading size={32} />
       </div>
     );
   }
@@ -41,11 +42,11 @@ export const AdminDashboardSection = () => {
     },
     {
       title: '미해결 티켓',
-      value: stats.pendingFeedback.toLocaleString(),
+      value: stats.pendingTickets.toLocaleString(),
       icon: AlertCircle,
-      bgColor: stats.pendingFeedback > 0 ? 'bg-amber-500/10' : 'bg-slate-700/50',
-      iconColor: stats.pendingFeedback > 0 ? 'text-amber-400' : 'text-slate-400',
-      borderColor: stats.pendingFeedback > 0 ? 'border-amber-500/20' : 'border-slate-600/50',
+      bgColor: stats.pendingTickets > 0 ? 'bg-amber-500/10' : 'bg-slate-700/50',
+      iconColor: stats.pendingTickets > 0 ? 'text-amber-400' : 'text-slate-400',
+      borderColor: stats.pendingTickets > 0 ? 'border-amber-500/20' : 'border-slate-600/50',
     },
   ];
 
@@ -75,4 +76,3 @@ export const AdminDashboardSection = () => {
     </div>
   );
 };
-

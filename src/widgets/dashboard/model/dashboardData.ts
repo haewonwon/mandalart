@@ -1,4 +1,4 @@
-import type { MandalartCardProps } from '@/entities/mandalart/ui/MandalartCard';
+import type { MandalartCardProps } from '@/entities/mandalart';
 
 export const dashboardStatusMessage = '현재 진행 중인 만다라트가 없습니다.';
 

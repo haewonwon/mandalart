@@ -1,14 +1,12 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Grid3x3 } from '@/shared/ui/Grid';
+import { Grid3x3, AlertModal, ConfirmModal } from '@/shared/ui';
+import { formatError } from '@/shared/lib';
+import { useModal } from '@/shared/hooks';
 import Link from 'next/link';
 import { ArrowLeft, ChevronDown, Pencil } from 'lucide-react';
 import { useCreateWizard } from '@/features/mandalart/create/model/useCreateWizard';
-import { useModal } from '@/shared/hooks/useModal';
-import { AlertModal } from '@/shared/ui/AlertModal';
-import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { formatError } from '@/shared/lib/error/formatError';
 
 export const MandalartNewPage = () => {
   const modal = useModal();

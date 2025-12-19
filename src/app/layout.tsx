@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Header } from '@/widgets/header/ui/Header';
-import { ReactQueryProvider } from '@/shared/lib/react-query/ReactQueryProvider';
-import { BanCheckProvider } from '@/shared/components/BanCheckProvider';
+import { ReactQueryProvider } from '@/app/providers/ReactQueryProvider';
+import { BanCheckProvider } from '@/app/providers/BanCheckProvider';
+import { GlobalLoadingProvider } from '@/app/providers/GlobalLoadingProvider';
 
 export const metadata: Metadata = {
   title: {
@@ -47,10 +48,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body className="flex min-h-screen flex-col bg-white text-slate-900 antialiased">
         <ReactQueryProvider>
-          <BanCheckProvider>
-            <Header />
-            <div className="flex flex-1 flex-col">{children}</div>
-          </BanCheckProvider>
+          <GlobalLoadingProvider>
+            <BanCheckProvider>
+              <Header />
+              <div className="flex flex-1 flex-col">{children}</div>
+            </BanCheckProvider>
+          </GlobalLoadingProvider>
         </ReactQueryProvider>
       </body>
     </html>

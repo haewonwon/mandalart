@@ -3,8 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import type { MandalartCenterGrid, MandalartCell, MandalartSubGridKey, MandalartGrid } from '@/entities/mandalart/model/types';
-import { createEmptyGrid } from '@/shared/lib/constants';
+import { type MandalartCenterGrid, type MandalartCell, type MandalartSubGridKey, type MandalartGrid } from '@/entities/mandalart';
+import { createEmptyGrid } from '@/shared/lib';
 import { getMandalart, updateMandalart } from '@/shared/api';
 
 // 빈 서브 그리드 생성 헬퍼

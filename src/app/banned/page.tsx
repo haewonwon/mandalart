@@ -1,6 +1,6 @@
 'use client';
 
-import { createClient } from '@/shared/lib/supabase/client';
+import { createClient } from '@/shared/lib';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Ban } from 'lucide-react';

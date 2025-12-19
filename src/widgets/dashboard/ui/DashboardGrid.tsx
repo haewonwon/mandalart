@@ -3,13 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Plus, LayoutGrid, Target } from 'lucide-react';
-import { MandalartCard } from '@/entities/mandalart/ui/MandalartCard';
+import { MandalartCard, type Mandalart, type MandalartGrid, type MandalartCenterGrid } from '@/entities/mandalart';
 import { EmptyState } from './EmptyState';
-import type {
-  Mandalart,
-  MandalartGrid,
-  MandalartCenterGrid,
-} from '@/entities/mandalart/model/types';
 
 interface DashboardGridProps {
   mandalarts?: Mandalart[];
