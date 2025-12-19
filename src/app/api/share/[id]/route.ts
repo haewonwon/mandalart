@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { extractMandalartIdFromToken } from '@/shared/lib/share/generateShareToken';
+import { extractMandalartIdFromToken } from '@/shared/lib';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const awaitedParams = await params;

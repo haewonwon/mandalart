@@ -1,7 +1,7 @@
 'use client';
 
 import { useIsFetching, useIsMutating } from '@tanstack/react-query';
-import { Loading } from '@/shared/ui/Loading';
+import { Loading } from '@/shared/ui';
 
 /**
  * React Query 전역 로딩 상태를 감지하여 표시하는 Provider
