@@ -1,10 +1,14 @@
 'use client';
 
-import type { MandalartGrid, MandalartSubGridKey, MandalartCenterGrid } from '@/entities/mandalart/model/types';
-import { MandalartCellItem } from '@/entities/mandalart/ui/Cell';
-import { Grid3x3 } from '@/shared/ui/Grid';
+import {
+  MandalartCellItem,
+  type MandalartGrid,
+  type MandalartSubGridKey,
+  type MandalartCenterGrid,
+} from '@/entities/mandalart';
+import { Grid3x3 } from '@/shared/ui';
+import { INITIAL_MANDALART } from '@/shared/lib';
 import { SortableGridItem } from './SortableGridItem';
-import { INITIAL_MANDALART } from '@/shared/lib/constants';
 import {
   DndContext,
   closestCenter,
@@ -109,7 +113,9 @@ export const FullMandalartBoard = ({
     const centerCell = newCenter[4]; // 가운데 셀은 항상 고정
 
     // orderedPositions에서 center를 제외한 subGrid 순서 추출
-    const subGridOrder = orderedPositions.filter((pos) => pos !== 'center') as MandalartSubGridKey[];
+    const subGridOrder = orderedPositions.filter(
+      (pos) => pos !== 'center'
+    ) as MandalartSubGridKey[];
 
     // 각 위치(0-8, 4 제외)에 해당하는 subGrid를 찾아서 center 셀 재배치
     const positionToSubGrid: (MandalartSubGridKey | null)[] = Array(9).fill(null);
@@ -147,7 +153,11 @@ export const FullMandalartBoard = ({
   const renderGridBlock = (posKey: MandalartSubGridKey | 'center', isOverlay = false) => {
     if (posKey === 'center') {
       return (
-        <div className={`bg-slate-100 p-0.5 sm:p-1 rounded w-full h-full min-w-0 min-h-0 ${isOverlay ? 'shadow-xl' : ''}`}>
+        <div
+          className={`bg-slate-100 p-0.5 sm:p-1 rounded w-full h-full min-w-0 min-h-0 ${
+            isOverlay ? 'shadow-xl' : ''
+          }`}
+        >
           <Grid3x3 className="gap-0.5 w-full h-full">
             {reorderedCenter.map((cell, idx) => (
               <MandalartCellItem
@@ -177,7 +187,7 @@ export const FullMandalartBoard = ({
       // (4는 center이므로 제외)
       centerCell = reorderedCenter[positionIndex];
     }
-    
+
     // fallback: 원본 center에서 찾기
     if (!centerCell) {
       const centerIndex = SUBGRID_TO_CENTER_INDEX[posKey];
@@ -249,9 +259,11 @@ export const FullMandalartBoard = ({
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={sortableItems} strategy={rectSortingStrategy}>
-        <div 
+        <div
           ref={exportRef}
-          className={`grid grid-cols-3 gap-0.5 sm:gap-2 w-full h-full min-w-0 min-h-0 ${className || ''}`}
+          className={`grid grid-cols-3 gap-0.5 sm:gap-2 w-full h-full min-w-0 min-h-0 ${
+            className || ''
+          }`}
         >
           {renderItems}
         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Loader2, Mail, Ban, CheckCircle2 } from 'lucide-react';
-import { createClient } from '@/shared/lib/supabase/client';
+import { createClient } from '@/shared/lib';
 
 interface User {
   id: string;

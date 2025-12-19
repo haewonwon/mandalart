@@ -1,10 +1,10 @@
 'use client';
 
 import { useMemo } from 'react';
-import { formatRelativeTime } from '@/shared/lib/date';
+import { formatRelativeTime } from '@/shared/lib';
 import { useProfile } from '@/features/user/profile/model/useProfile';
 import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
-import type { MandalartCenterGrid, MandalartSubGridKey } from '@/entities/mandalart/model/types';
+import { type MandalartCenterGrid, type MandalartSubGridKey } from '@/entities/mandalart';
 
 type WelcomeSectionProps = {
   count?: number;

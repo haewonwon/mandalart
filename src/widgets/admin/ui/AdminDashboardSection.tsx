@@ -1,7 +1,7 @@
 'use client';
 
 import { Users, FileText, UserPlus, AlertCircle } from 'lucide-react';
-import { Loading } from '@/shared/ui/Loading';
+import { Loading } from '@/shared/ui';
 import { useAdminStats } from '@/features/admin/model/useAdminStats';
 
 export const AdminDashboardSection = () => {

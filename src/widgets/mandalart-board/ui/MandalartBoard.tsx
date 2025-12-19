@@ -1,8 +1,7 @@
 'use client';
 
-import type { MandalartCenterGrid } from '@/entities/mandalart/model/types';
-import { MandalartCellItem } from '@/entities/mandalart/ui/Cell';
-import { Grid3x3 } from '@/shared/ui/Grid';
+import { MandalartCellItem, type MandalartCenterGrid } from '@/entities/mandalart';
+import { Grid3x3 } from '@/shared/ui';
 
 type MandalartBoardProps = {
   grid?: MandalartCenterGrid;
