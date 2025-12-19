@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchRecentMandalart } from '@/shared/api/mandalart';
+import { getRecentMandalart } from '@/shared/api';
 
 export const useRecentMandalart = () => {
   return useQuery({
     queryKey: ['recentMandalart'],
-    queryFn: fetchRecentMandalart,
+    queryFn: getRecentMandalart,
   });
 };

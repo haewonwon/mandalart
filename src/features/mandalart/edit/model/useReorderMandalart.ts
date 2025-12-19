@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { reorderMandalartGrid } from '@/shared/lib/mandalart/reorder';
 import { Mandalart, MandalartSubGridKey } from '@/entities/mandalart/model/types';
-import { saveMandalartVersion } from '@/shared/api/mandalart';
+import { updateMandalart } from '@/shared/api';
 
 export const useReorderMandalart = (selectedMandalart: Mandalart | null) => {
   const queryClient = useQueryClient();
@@ -20,7 +20,7 @@ export const useReorderMandalart = (selectedMandalart: Mandalart | null) => {
       const reorderedContent = reorderMandalartGrid(currentData, newOrder);
 
       // 2. API 호출 (차단 체크는 API 내부에서 처리)
-      await saveMandalartVersion({
+      await updateMandalart({
         mandalartId: selectedMandalart.id,
         content: reorderedContent,
         versionType: 'REORDER',

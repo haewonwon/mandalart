@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import type { MandalartCenterGrid, MandalartCell, MandalartSubGridKey, MandalartGrid } from '@/entities/mandalart/model/types';
 import { createEmptyGrid } from '@/shared/lib/constants';
-import { fetchMandalartById, saveMandalartVersion } from '@/shared/api/mandalart';
+import { getMandalart, updateMandalart } from '@/shared/api';
 
 // 빈 서브 그리드 생성 헬퍼
 const createEmptySubGrid = (idPrefix: string): MandalartCenterGrid => {
@@ -57,7 +57,7 @@ export const useMandalartDetail = (id: string | undefined) => {
     queryKey: ['mandalart', mandalartId],
     queryFn: () => {
       if (!mandalartId) throw new Error('만다라트 ID가 없습니다.');
-      return fetchMandalartById(mandalartId);
+      return getMandalart(mandalartId);
     },
     enabled: !!mandalartId,
   });
@@ -152,7 +152,7 @@ export const useMandalartDetail = (id: string | undefined) => {
 
       // API 호출 (차단 체크는 API 내부에서 처리)
       try {
-        await saveMandalartVersion({
+        await updateMandalart({
           mandalartId: mandalart.id,
           content: updatedContent,
           versionType,

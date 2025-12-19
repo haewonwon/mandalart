@@ -8,7 +8,7 @@ import { Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthSession } from '@/features/auth/model/useAuthSession';
-import { fetchMandalartForShare } from '@/shared/api/mandalart';
+import { getMandalartForShare } from '@/shared/api';
 
 const DEFAULT_ORDER: (MandalartSubGridKey | 'center')[] = [
   'northWest',
@@ -37,7 +37,7 @@ export const MandalartSharePage = ({ mandalartId, shareToken }: MandalartSharePa
       if (!mandalartId) {
         throw new Error('만다라트 ID가 없습니다.');
       }
-      return fetchMandalartForShare(mandalartId);
+      return getMandalartForShare(mandalartId);
     },
     enabled: !!mandalartId, // mandalartId가 있을 때만 쿼리 실행
   });

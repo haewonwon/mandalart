@@ -2,7 +2,7 @@
 
 import type { Profile } from '@/entities/user/model/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchProfile, updateProfileNickname } from '@/shared/api/user';
+import { getProfile, updateProfile as updateProfileApi } from '@/shared/api';
 
 export const useProfile = () => {
   const queryClient = useQueryClient();
@@ -10,7 +10,7 @@ export const useProfile = () => {
   // 1. Fetch Profile (useQuery)
   const { data, isLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: fetchProfile,
+    queryFn: getProfile,
     staleTime: 1000 * 60 * 5, // 5분간 캐시 유지
   });
 
@@ -20,7 +20,7 @@ export const useProfile = () => {
       const user = data?.user;
       if (!user) throw new Error('No user found');
 
-      return await updateProfileNickname(newNickname, user.id);
+      return await updateProfileApi(newNickname, user.id);
     },
     // Optimistic Update: mutation 실행 전에 UI를 먼저 업데이트
     onMutate: async (newNickname: string) => {
@@ -28,7 +28,9 @@ export const useProfile = () => {
       await queryClient.cancelQueries({ queryKey: ['profile'] });
 
       // 이전 데이터 백업 (에러 시 롤백용)
-      const previousData = queryClient.getQueryData<{ user: any; profile: Profile | null }>(['profile']);
+      const previousData = queryClient.getQueryData<{ user: any; profile: Profile | null }>([
+        'profile',
+      ]);
 
       // 새로운 데이터로 캐시 업데이트 (즉시 UI 반영)
       if (previousData && previousData.profile) {

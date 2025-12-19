@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchAllMandalarts } from '@/shared/api/mandalart';
+import { getAllMandalarts } from '@/shared/api';
 
 export const useAllMandalarts = () => {
   return useQuery({
     queryKey: ['allMandalarts'],
-    queryFn: fetchAllMandalarts,
+    queryFn: getAllMandalarts,
   });
 };
 

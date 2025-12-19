@@ -11,7 +11,7 @@ import type {
 } from '@/entities/mandalart/model/types';
 import { createEmptyGrid, createEmptyCell } from '@/shared/lib/constants';
 import { determineVersionType } from '@/shared/lib/mandalart/versionType';
-import { saveMandalartVersion } from '@/shared/api/mandalart';
+import { updateMandalart } from '@/shared/api';
 
 // 인덱스와 서브 그리드 키 매핑
 const INDEX_TO_SUBGRID_KEY: Partial<Record<number, MandalartSubGridKey>> = {
@@ -99,7 +99,7 @@ export const useCenterEdit = (selectedYear: number | null) => {
 
       // API 호출 (차단 체크는 API 내부에서 처리)
       try {
-        await saveMandalartVersion({
+        await updateMandalart({
           mandalartId: mandalart.id,
           content: gridData,
           versionType,

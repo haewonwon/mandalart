@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MandalartCenterGrid, MandalartGrid } from '@/entities/mandalart/model/types';
 import { useNewMandalart } from './useNewMandalart';
-import { createMandalart } from '@/shared/api/mandalart';
+import { createMandalart } from '@/shared/api';
 
 export type Step = 'SETUP' | 'CORE_GRID' | 'EXPAND_GRID';
 

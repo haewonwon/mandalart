@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchMandalartVersions } from '@/shared/api/mandalart';
+import { getMandalartVersions } from '@/shared/api';
 
 export const useMandalartVersions = (mandalartId: string | null) => {
   return useQuery({
     queryKey: ['mandalartVersions', mandalartId],
-    queryFn: () => fetchMandalartVersions(mandalartId!),
+    queryFn: () => getMandalartVersions(mandalartId!),
     enabled: !!mandalartId,
   });
 };

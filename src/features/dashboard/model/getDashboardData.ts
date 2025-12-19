@@ -1,7 +1,7 @@
 import { createClient } from '@/shared/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
-import { fetchAllMandalartsServer, fetchProfileNicknameServer } from '@/shared/api/mandalart.server';
+import { getMandalartsServer, getProfileNicknameServer } from '@/shared/api';
 
 export async function getDashboardData() {
   const supabase = await createClient();
@@ -24,8 +24,8 @@ export async function getDashboardData() {
 
   // 3. 병렬로 데이터 패칭 (Promise.all)
   const [nicknameData, mandalarts] = await Promise.all([
-    fetchProfileNicknameServer(user.id),
-    fetchAllMandalartsServer(user.id),
+    getProfileNicknameServer(user.id),
+    getMandalartsServer(user.id),
   ]);
 
   const nickname = nicknameData || user.email?.split('@')[0] || 'Guest';
