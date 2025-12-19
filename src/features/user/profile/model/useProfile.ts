@@ -1,43 +1,16 @@
 'use client';
 
-import { createClient } from '@/shared/lib/supabase/client';
 import type { Profile } from '@/entities/user/model/types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchProfile, updateProfileNickname } from '@/shared/api/user';
 
 export const useProfile = () => {
   const queryClient = useQueryClient();
-  const supabase = createClient();
 
   // 1. Fetch Profile (useQuery)
   const { data, isLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: async () => {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-      if (authError || !user) return { user: null, profile: null };
-
-      const { data: profileData, error: dbError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (dbError) {
-        // Fallback: DB에 없으면 Auth 정보로 임시 구성
-        return {
-          user,
-          profile: {
-            id: user.id,
-            email: user.email || '',
-            nickname: user.user_metadata.full_name || '',
-          } as Profile,
-        };
-      }
-
-      return { user, profile: profileData as Profile };
-    },
+    queryFn: fetchProfile,
     staleTime: 1000 * 60 * 5, // 5분간 캐시 유지
   });
 
@@ -47,16 +20,7 @@ export const useProfile = () => {
       const user = data?.user;
       if (!user) throw new Error('No user found');
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          nickname: newNickname,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
-
-      if (error) throw error;
-      return newNickname;
+      return await updateProfileNickname(newNickname, user.id);
     },
     // Optimistic Update: mutation 실행 전에 UI를 먼저 업데이트
     onMutate: async (newNickname: string) => {

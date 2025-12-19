@@ -3,10 +3,9 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/shared/lib/supabase/client';
 import { MandalartCenterGrid, MandalartGrid } from '@/entities/mandalart/model/types';
 import { useNewMandalart } from './useNewMandalart';
-import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
+import { createMandalart } from '@/shared/api/mandalart';
 
 export type Step = 'SETUP' | 'CORE_GRID' | 'EXPAND_GRID';
 
@@ -151,22 +150,8 @@ export const useCreateWizard = ({
   const { mutate: saveMandalart, isPending: isLoading } = useMutation({
     mutationFn: async () => {
       if (!centerGrid) throw new Error('데이터가 부족합니다.');
-      const supabase = createClient();
 
-      // 1. 로그인 체크
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error('로그인이 필요합니다.');
-
-      // 2. 차단 상태 체크
-      const isBanned = await checkBanStatus(supabase, user.id);
-      if (isBanned) {
-        router.push('/banned');
-        throw new Error('차단된 유저는 만다라트를 생성할 수 없습니다.');
-      }
-
-      // 3. 저장할 데이터 구성 (MandalartGrid 타입)
+      // 저장할 데이터 구성 (MandalartGrid 타입)
       const payloadContent = generatedGrid
         ? {
             center: centerGrid,
@@ -180,15 +165,20 @@ export const useCreateWizard = ({
       // 제목은 별도 입력이 없으므로 '핵심 목표'를 제목으로 사용
       const title = centerGrid[4].label;
 
-      // 4. Supabase RPC 호출
-      const { data, error } = await supabase.rpc('create_mandalart', {
-        p_title: title,
-        p_year: year,
-        p_initial_content: payloadContent,
-      });
-
-      if (error) throw error;
-      return data; // 생성된 ID 반환
+      // API 호출 (차단 체크는 API 내부에서 처리)
+      try {
+        return await createMandalart({
+          title,
+          year,
+          initialContent: payloadContent,
+        });
+      } catch (error: any) {
+        // 차단 에러인 경우 리다이렉트
+        if (error.message?.includes('차단된 유저')) {
+          router.push('/banned');
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       // 성공 메시지는 상위 컴포넌트에서 Modal로 처리

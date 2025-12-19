@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/shared/lib/supabase/client';
 import { useAllMandalarts } from '@/features/mandalart/view/model/useAllMandalarts';
 import type {
   MandalartCenterGrid,
@@ -12,7 +11,7 @@ import type {
 } from '@/entities/mandalart/model/types';
 import { createEmptyGrid, createEmptyCell } from '@/shared/lib/constants';
 import { determineVersionType } from '@/shared/lib/mandalart/versionType';
-import { checkBanStatus } from '@/shared/lib/auth/checkBanStatus';
+import { saveMandalartVersion } from '@/shared/api/mandalart';
 
 // 인덱스와 서브 그리드 키 매핑
 const INDEX_TO_SUBGRID_KEY: Partial<Record<number, MandalartSubGridKey>> = {
@@ -82,7 +81,6 @@ export const useCenterEdit = (selectedYear: number | null) => {
   const { mutate, mutateAsync, isPending: isSaving } = useMutation({
     mutationFn: async () => {
       if (!gridData || !mandalart) throw new Error('저장할 데이터가 없습니다.');
-      const supabase = createClient();
 
       // 변경된 셀들 중 가장 우선순위가 높은 타입 선택
       // 우선순위: EDIT_MAIN > EDIT_SUB > EDIT_TASK
@@ -99,27 +97,21 @@ export const useCenterEdit = (selectedYear: number | null) => {
         // EDIT_TASK는 기본값이 EDIT_SUB이므로 무시
       }
 
-      // 차단 상태 체크
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error('로그인이 필요합니다.');
-
-      const isBanned = await checkBanStatus(supabase, user.id);
-      if (isBanned) {
-        router.push('/banned');
-        throw new Error('차단된 유저는 만다라트를 수정할 수 없습니다.');
+      // API 호출 (차단 체크는 API 내부에서 처리)
+      try {
+        await saveMandalartVersion({
+          mandalartId: mandalart.id,
+          content: gridData,
+          versionType,
+          note: '핵심 목표 수정',
+        });
+      } catch (error: any) {
+        // 차단 에러인 경우 리다이렉트
+        if (error.message?.includes('차단된 유저')) {
+          router.push('/banned');
+        }
+        throw error;
       }
-
-      // 새 버전 저장 (save_new_version RPC)
-      const { error } = await supabase.rpc('save_new_version', {
-        p_mandalart_id: mandalart.id,
-        p_content: gridData,
-        p_version_type: versionType,
-        p_note: '핵심 목표 수정',
-      });
-
-      if (error) throw error;
       
       // 저장 성공 후 변경 추적 초기화
       setChangedCells([]);

@@ -1,3 +1,5 @@
+'use client';
+
 export const Grid3x3 = ({
   children,
   className,
