@@ -2,17 +2,13 @@
 
 import { MiniGridPreview } from './MiniGridPreview';
 import Link from 'next/link';
-import { formatRelativeTime } from '@/shared/lib/date';
+import { formatRelativeTime } from '@/shared/lib';
+import type { MandalartCardProps } from '@/entities/mandalart';
 
-export type MandalartCardProps = {
-  id: string;
-  title: string;
-  status: string;
-  gridPreview: Array<{ id: string; label: string }>;
-  // year?: number;
-  // updatedAt?: string;
-};
-
+/**
+ * 만다라트 카드 컴포넌트
+ * @description 대시보드에서 만다라트 프로젝트를 카드 형태로 표시
+ */
 export const MandalartCard = ({ id, title, status, gridPreview }: MandalartCardProps) => {
   return (
     <article className="flex h-full flex-col justify-between border border-slate-200 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(15,23,42,0.09)]">
